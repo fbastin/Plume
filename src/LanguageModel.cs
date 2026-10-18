@@ -14,8 +14,8 @@ namespace Plume
     {
         public string Lang;
         public string[] Words;        // forme canonique (« Paris », « je »)
-        public string[] Lower;        // minuscules
-        public string[] Folded;       // sans accents
+        public string[] Lower;        // minuscules (même chaîne que Words si identique, pour économiser la mémoire)
+        public string[] Folded;       // sans accents (même chaîne que Lower si identique)
         public string[] Phon;         // clé phonétique
         public int[] Freq;            // fréquence pondérée (probabilité × 1e9)
         public int[] CtxTotal;        // nombre d'occurrences du mot suivi d'un autre mot
@@ -26,8 +26,10 @@ namespace Plume
         public int[] BiWord;
         public int[] BiCount;
 
-        // Trigrammes : contexte (a, b) -> plage dans TriWord/TriCount.
-        readonly Dictionary<long, int> triIndex = new Dictionary<long, int>();
+        // Trigrammes : contexte (a, b) -> plage dans TriWord/TriCount. Les contextes sont retrouvés par
+        // recherche dichotomique dans triKeys (trié) ; un dictionnaire prendrait deux à quatre fois plus de mémoire.
+        long[] triKeys;
+        int[] triContext;             // contexte correspondant à triKeys[k]
         int[] triStart;
         int[] triTotal;
         public int[] TriWord;
@@ -52,16 +54,11 @@ namespace Plume
 
         public static LanguageModel Load(string path)
         {
-            byte[] data;
+            // Lecture au fil de la décompression : le fichier décompressé (près de 20 Mo) n'est jamais en mémoire.
+            var lm = new LanguageModel();
             using (var fs = File.OpenRead(path))
             using (var gz = new GZipStream(fs, CompressionMode.Decompress))
-            using (var ms = new MemoryStream())
-            {
-                gz.CopyTo(ms);
-                data = ms.ToArray();
-            }
-            var lm = new LanguageModel();
-            using (var r = new BinaryReader(new MemoryStream(data), Encoding.UTF8))
+            using (var r = new BinaryReader(new BufferedStream(gz, 1 << 16), Encoding.UTF8))
             {
                 if (Encoding.ASCII.GetString(r.ReadBytes(4)) != "PLM1")
                     throw new InvalidDataException("Format de modèle inconnu : " + path);
@@ -75,7 +72,8 @@ namespace Plume
                 {
                     string w = Encoding.UTF8.GetString(r.ReadBytes(r.ReadUInt16()));
                     lm.Words[i] = w;
-                    lm.Lower[i] = w.ToLowerInvariant();
+                    string lower = w.ToLowerInvariant();
+                    lm.Lower[i] = lower == w ? w : lower;
                     lm.Freq[i] = r.ReadInt32();
                     lm.CtxTotal[i] = r.ReadInt32();
                     lm.FreqTotal += lm.Freq[i];
@@ -102,6 +100,8 @@ namespace Plume
 
                 int nCtx = r.ReadInt32();
                 lm.triStart = new int[nCtx + 1];
+                lm.triKeys = new long[nCtx];
+                lm.triContext = new int[nCtx];
                 lm.triTotal = new int[nCtx];
                 var triWord = new List<int>(nCtx * 8);
                 var triCount = new List<int>(nCtx * 8);
@@ -110,7 +110,8 @@ namespace Plume
                     int a = r.ReadInt32(), b = r.ReadInt32();
                     lm.triTotal[c] = r.ReadInt32();
                     int n = r.ReadInt32();
-                    lm.triIndex[Key(a, b)] = c;
+                    lm.triKeys[c] = Key(a, b);
+                    lm.triContext[c] = c;
                     lm.triStart[c] = triWord.Count;
                     for (int k = 0; k < n; k++)
                     {
@@ -121,6 +122,7 @@ namespace Plume
                 lm.triStart[nCtx] = triWord.Count;
                 lm.TriWord = triWord.ToArray();
                 lm.TriCount = triCount.ToArray();
+                Array.Sort(lm.triKeys, lm.triContext);
             }
             lm.BuildIndexes();
             return lm;
@@ -135,7 +137,8 @@ namespace Plume
             PhonSet = new HashSet<string>(StringComparer.Ordinal);
             for (int i = 0; i < v; i++)
             {
-                Folded[i] = TextUtil.Fold(Words[i]);
+                string folded = TextUtil.Fold(Words[i]);
+                Folded[i] = folded == Lower[i] ? Lower[i] : folded;
                 Phon[i] = i < FirstWordId ? "" : TextUtil.Phonetic(Words[i], Lang);
                 if (Phon[i].Length > 0)
                 {
@@ -201,12 +204,13 @@ namespace Plume
         /// <summary>Plage des suites du contexte (a, b) dans TriWord, ou false si absent.</summary>
         public bool TrigramRange(int a, int b, out int start, out int end, out int total)
         {
-            int c;
-            if (a < 0 || b < 0 || !triIndex.TryGetValue(Key(a, b), out c))
+            int k = a < 0 || b < 0 ? -1 : Array.BinarySearch(triKeys, Key(a, b));
+            if (k < 0)
             {
                 start = end = total = 0;
                 return false;
             }
+            int c = triContext[k];
             start = triStart[c];
             end = triStart[c + 1];
             total = triTotal[c];

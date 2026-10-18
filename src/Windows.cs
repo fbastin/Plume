@@ -408,7 +408,7 @@ namespace Plume
         Font font, glyphFont;
         float fontScale;
         int hover = -1, pressed = -1;
-        bool dragging;
+        bool dragging, iconsOnly;
         Point dragOffset;
         readonly ToolTip tip = new ToolTip { ShowAlways = true };
         static readonly bool HasGlyphFont = FontExists("Segoe Fluent Icons") || FontExists("Segoe MDL2 Assets");
@@ -491,11 +491,14 @@ namespace Plume
             Relayout();
         }
 
-        public void SetGlyph(string id, string glyph, string label)
+        public void SetGlyph(string id, string glyph, string label, string tipText)
         {
             Button b = Find(id);
             b.Glyph = glyph;
             b.Label = label;
+            b.Tip = tipText;
+            if (hover >= 0 && buttons[hover] == b)
+                tip.SetToolTip(this, tipText);
             Relayout();
         }
 
@@ -503,6 +506,28 @@ namespace Plume
         {
             theme = t;
             Relayout();
+        }
+
+        /// <summary>
+        /// Icônes seules : la barre prend moins de place, le libellé passe dans la bulle d'aide.
+        /// Le bouton de langue (FR / EN) n'a pas d'icône et garde son texte.
+        /// </summary>
+        public bool IconsOnly
+        {
+            get { return iconsOnly; }
+            set
+            {
+                if (iconsOnly == value)
+                    return;
+                iconsOnly = value;
+                hover = -1;
+                Relayout();
+            }
+        }
+
+        bool ShowsLabel(Button b)
+        {
+            return b.Label.Length > 0 && !(iconsOnly && HasGlyphFont && b.Glyph.Length > 0);
         }
 
         void EnsureFonts()
@@ -531,7 +556,7 @@ namespace Plume
                 float w = 10 * s;
                 if (HasGlyphFont && b.Glyph.Length > 0)
                     w += 18 * s;
-                if (b.Label.Length > 0)
+                if (ShowsLabel(b))
                     w += TextRenderer.MeasureText(b.Label, font).Width + (HasGlyphFont && b.Glyph.Length > 0 ? 2 * s : 0);
                 if (!HasGlyphFont && b.Label.Length == 0)
                     w += TextRenderer.MeasureText(FallbackLabel(b.Id), font).Width;
@@ -540,7 +565,13 @@ namespace Plume
             }
             var size = new Size((int)(x + 3 * s), (int)h);
             if (Size != size)
+            {
                 Size = size;
+                // Barre élargie (libellés réaffichés) : elle ne doit pas déborder de l'écran.
+                Rectangle wa = Screen.FromControl(this).WorkingArea;
+                if (Visible && Right > wa.Right)
+                    Left = Math.Max(wa.Left, wa.Right - Width);
+            }
             Invalidate();
         }
 
@@ -587,7 +618,7 @@ namespace Plume
                     TextRenderer.DrawText(g, b.Glyph, glyphFont, gr, fg, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.NoPadding);
                     x += 20 * s;
                 }
-                string label = b.Label.Length > 0 || HasGlyphFont ? b.Label : (FallbackLabel(b.Id));
+                string label = !HasGlyphFont && b.Label.Length == 0 ? FallbackLabel(b.Id) : ShowsLabel(b) ? b.Label : "";
                 if (label.Length > 0)
                 {
                     var tr = new Rectangle((int)x, rect.Y, (int)(b.Bounds.Right - x), rect.Height);

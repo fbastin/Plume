@@ -36,6 +36,7 @@ namespace Plume
         public int[] Backspaces;
         public string[] Inserts;
         public int Seq;          // état du texte pour lequel ces propositions ont été calculées
+        public bool TabSelects;  // un mot est en cours de frappe et le premier proposé le change : Tab le choisit
     }
 
     /// <summary>
@@ -58,6 +59,7 @@ namespace Plume
         public volatile bool AutoSpaceArmed;
         public volatile string AttachChars = ".,)…";
         public volatile int SelectionMode = (int)SelectionKeys.Digits;
+        public volatile bool TabSelectsFirst = true;
 
         public Action<KeyEvent> Post;
         public Func<IntPtr, bool> IsOwnWindow;
@@ -217,12 +219,19 @@ namespace Plume
                     EmitChange(ev, KeyKind.Enter);
                     return false;
                 case VK_TAB:
+                    // Tab choisit le premier mot pendant la frappe d'un mot. Maj+Tab, Tab après une espace
+                    // et Échap puis Tab gardent la tabulation habituelle (champ suivant, cellule, retrait).
+                    if (TabSelectsFirst && !shift && snap != null && snap.Seq == changeSeq && snap.TabSelects)
+                        return Select(ev, snap, 0);
                     EmitChange(ev, KeyKind.Reset);
                     return false;
                 case VK_ESCAPE:
                     pendingDead = '\0';
+                    // Liste affichée : Échap ne fait que la masquer. Transmis à l'application, il fermerait
+                    // une boîte de dialogue ou annulerait la saisie d'une cellule Excel.
+                    bool listShown = snap != null && snap.Seq == changeSeq;
                     EmitChange(ev, KeyKind.Escape);
-                    return false;
+                    return listShown;
                 case VK_DELETE:
                 case VK_APPS:
                     return false;

@@ -17,7 +17,8 @@ in the spirit of WordQ:
 - **Abbreviations**: "btw" → *by the way*, "bjr" → *bonjour* (editable).
 - **Bilingual**: write in English or French (one-click switch), with the interface (menus, options,
   setup) in English or French (*Options → Appearance → Interface language*; Windows' language by default).
-- Themes (light, dark, cream, high contrast), any font and size (e.g. a dyslexia-friendly font).
+- Themes (light, dark, cream, high contrast), any font and size (e.g. a dyslexia-friendly font),
+  toolbar with or without text (*Options → Appearance → Toolbar*).
 
 ## Install
 
@@ -51,7 +52,8 @@ Without installing, `bin\Plume.exe` also runs directly (the `bin` folder is self
 | Action | How |
 |---|---|
 | Choose a suggested word | number key **1** to **9** (or **F1**–**F9**, or a click, depending on the options) |
-| Type a digit while the list is shown | **Esc** hides the list, then type the digit |
+| Choose the first suggested word | **Tab** while typing a word (can be turned off in the options) |
+| Type a digit or a Tab while the list is shown | **Esc** hides the list, then type the digit or **Tab** |
 | AZERTY keyboard | digits come with **Shift** or the **numeric keypad**; F1–F9 can be chosen instead |
 | Hear a word from the list | hover over it with the mouse |
 | Stop seeing a word | right-click the word → *Never suggest* |

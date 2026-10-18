@@ -18,7 +18,8 @@ Plume aide à écrire dans **n'importe quelle application** (Word, navigateur, c
 - **Bilingue** : on écrit en français ou en anglais (bascule en un clic), et l'interface (menus,
   options, installation) est en français ou en anglais (*Options → Apparence → Langue de l'interface* ;
   par défaut, celle de Windows).
-- Thèmes (clair, sombre, crème, contraste élevé), police et taille au choix (ex. police pour dyslexie).
+- Thèmes (clair, sombre, crème, contraste élevé), police et taille au choix (ex. police pour dyslexie),
+  barre d'outils avec ou sans texte (*Options → Apparence → Barre d'outils*).
 
 ## Installer
 
@@ -52,7 +53,8 @@ Sans installation, `bin\Plume.exe` se lance aussi directement (le dossier `bin` 
 | Action | Comment |
 |---|---|
 | Choisir un mot proposé | chiffre **1** à **9** (ou **F1**–**F9**, ou clic, selon les options) |
-| Taper un chiffre alors que la liste est affichée | **Échap** masque la liste, puis tapez le chiffre |
+| Choisir le premier mot proposé | **Tab** pendant la frappe d'un mot (désactivable dans les options) |
+| Taper un chiffre ou une tabulation alors que la liste est affichée | **Échap** masque la liste, puis tapez le chiffre ou **Tab** |
 | Clavier AZERTY | les chiffres s'obtiennent avec **Maj** ou le **pavé numérique** ; on peut aussi choisir F1–F9 |
 | Entendre un mot de la liste | passer la souris dessus |
 | Ne plus voir un mot | clic droit sur le mot → *Ne plus proposer* |

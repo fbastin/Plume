@@ -93,7 +93,7 @@ namespace PlumeE2E
         [DllImport("user32.dll")] static extern int GetWindowLong(IntPtr h, int i);
         [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
 
-        const ushort VK_BACK = 0x08, VK_SHIFT = 0x10, VK_ESCAPE = 0x1B, VK_OEM_6 = 0xDD;
+        const ushort VK_BACK = 0x08, VK_TAB = 0x09, VK_SHIFT = 0x10, VK_ESCAPE = 0x1B, VK_OEM_6 = 0xDD;
         const uint KEYUP = 0x2, UNICODE = 0x4;
 
         static Form form;
@@ -101,6 +101,7 @@ namespace PlumeE2E
         static Process plume;
         static string outDir, bin, profile;
         static int failures, checks;
+        static int escapes;      // touches Échap reçues par la fenêtre de test
         static bool onlyRead;
 
         [STAThread]
@@ -134,8 +135,14 @@ namespace PlumeE2E
                 Text = "Test Plume", StartPosition = FormStartPosition.Manual, Location = new Point(120, 120),
                 Size = new Size(900, 360)
             };
-            box = new TextBox { Multiline = true, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 16f), AcceptsReturn = true };
+            box = new TextBox { Multiline = true, Dock = DockStyle.Fill, Font = new Font("Segoe UI", 16f), AcceptsReturn = true, AcceptsTab = true };
             form.Controls.Add(box);
+            form.KeyPreview = true;
+            form.KeyDown += (o, e) =>
+            {
+                if (e.KeyCode == Keys.Escape)
+                    escapes++;
+            };
             form.Shown += async delegate
             {
                 try
@@ -261,6 +268,33 @@ namespace PlumeE2E
             await Task.Delay(400);
             string last = LastWord(box.Text);
             Check(last.StartsWith("mai") && !box.Text.EndsWith("1"), "retour arrière suivi : « " + box.Text + " »");
+
+            // Tab : premier mot pendant la frappe d'un mot ; tabulation ordinaire après une espace ou après Échap.
+            await Type("Les enfa");
+            await Task.Delay(500);
+            Shot("4b-tab");
+            await Key(VK_TAB, false);
+            await Task.Delay(400);
+            last = LastWord(box.Text);
+            Check(!box.Text.Contains("\t") && last.StartsWith("enfa") && last.Length > 4 && box.Text.EndsWith(" "),
+                "Tab choisit le premier mot : « " + box.Text + " »");
+            await Task.Delay(300);
+            await Key(VK_TAB, false);
+            await Task.Delay(300);
+            Check(box.Text.EndsWith(" \t"), "Tab après une espace reste une tabulation : « " + box.Text + " »");
+            await Type(" ils jou");
+            await Task.Delay(500);
+            int escBefore = escapes;
+            await Key(VK_ESCAPE, false);
+            await Key(VK_TAB, false);
+            await Task.Delay(300);
+            Check(box.Text.EndsWith("jou\t"), "Échap puis Tab donne une tabulation : « " + box.Text + " »");
+            Check(escapes == escBefore, "Échap masque la liste sans être transmis à l'application");
+            await Key(VK_ESCAPE, false);
+            await Task.Delay(200);
+            Check(escapes == escBefore + 1, "sans liste affichée, Échap est transmis à l'application");
+            await Key(VK_BACK, false);
+            await Type(".");
 
             uint layout = (uint)GetKeyboardLayout(0).ToInt64();
             ushort lang = (ushort)(layout & 0xFFFF);

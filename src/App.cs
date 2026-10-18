@@ -13,7 +13,7 @@ using Timer = System.Windows.Forms.Timer;
 [assembly: System.Reflection.AssemblyTitle("Plume")]
 [assembly: System.Reflection.AssemblyDescription("Assistant d'écriture / Writing assistant")]
 [assembly: System.Reflection.AssemblyProduct("Plume")]
-[assembly: System.Reflection.AssemblyVersion("1.0.2.0")]
+[assembly: System.Reflection.AssemblyVersion("1.0.3.0")]
 [assembly: System.Runtime.Versioning.TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
 
 namespace Plume
@@ -336,9 +336,9 @@ namespace Plume
             {
                 tray.ShowBalloonTip(5000, L.T("Plume est prêt", "Plume is ready"),
                     L.T("Écrivez dans n'importe quelle application : les mots proposés apparaissent sous le curseur. "
-                        + "Choisissez-en un avec son chiffre.",
+                        + "Tab choisit le premier, un chiffre choisit les autres.",
                         "Type in any application: suggested words appear below the cursor. "
-                        + "Pick one with its number."), ToolTipIcon.Info);
+                        + "Tab picks the first one, a number picks the others."), ToolTipIcon.Info);
                 settings.Save();
             }
         }
@@ -377,11 +377,13 @@ namespace Plume
             Theme theme = Theme.Get(settings.Theme);
             predWin.Configure(theme, settings.FontName, settings.FontSize, settings.Keys);
             predWin.Draggable = settings.Placement == Placement.Fixed;
+            toolbar.IconsOnly = settings.ToolbarIconsOnly;
             toolbar.Configure(theme);
             toolbar.SetState("predict", settings.PredictionEnabled);
             toolbar.SetState("speech", settings.SpeechEnabled);
             toolbar.SetLabel("lang", Lang.ToUpperInvariant());
             hooks.SelectionMode = (int)settings.Keys;
+            hooks.TabSelectsFirst = settings.TabSelectsFirst;
             hooks.AttachChars = !settings.SmartPunctuation ? "" : Lang == "fr" ? ".,)…" : ".,;:!?)…";
             speaker.Enabled = settings.SpeechEnabled;
             speaker.Configure(Lang, settings.VoiceFor(Lang), settings.Rate, settings.Volume);
@@ -437,7 +439,9 @@ namespace Plume
                 models[lang] = t.Result;
                 if (Lang == lang)
                     SetPredictor(t.Result);
-                // Le fichier décompressé n'est plus utile : on rend la mémoire tout de suite.
+                // Les tableaux temporaires du chargement ne sont plus utiles : on compacte le tas des gros objets
+                // pour que la mémoire libérée soit rendue à Windows (sinon, une cinquantaine de Mo restent réservés).
+                System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
                 GC.Collect();
             }));
         }
@@ -807,6 +811,8 @@ namespace Plume
                 snap.Backspaces[i] = partial.Length - common;
                 snap.Inserts[i] = w.Substring(common) + (space ? " " : "");
             }
+            // Mot déjà complet (« maison » tapé, « maison » proposé en premier) : Tab sert à passer au champ suivant.
+            snap.TabSelects = partial.Length > 0 && !string.Equals(snap.Words[0], partial, StringComparison.OrdinalIgnoreCase);
             hooks.Snapshot = null;
             shown = null;
             pendingItems = preds;
@@ -1007,9 +1013,9 @@ namespace Plume
         void UpdateReadButton()
         {
             if (speaker.IsSpeaking)
-                toolbar.SetGlyph("read", "", L.T("Arrêter", "Stop"));
+                toolbar.SetGlyph("read", "", L.T("Arrêter", "Stop"), L.T("Arrêter la lecture", "Stop reading"));
             else
-                toolbar.SetGlyph("read", "", L.T("Lire", "Read"));
+                toolbar.SetGlyph("read", "", L.T("Lire", "Read"), L.T("Lire la sélection ou la dernière phrase", "Read the selection or the last sentence"));
         }
 
         // ---------------------------------------------------------------- barre d'outils et menu

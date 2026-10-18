@@ -13,10 +13,10 @@ namespace Plume
         readonly Action<string, Settings> testVoice;
         public event Action<Settings> Applied;
 
-        ComboBox language, keys, placement, voiceFr, voiceEn, theme, uiLang;
+        ComboBox language, keys, placement, voiceFr, voiceEn, theme, uiLang, toolbarStyle;
         TabControl tabs;
         NumericUpDown count, minLearn;
-        CheckBox nextWord, addSpace, smartPunct, spelling, learn, terminals, speakHover, speakChosen, echoLetters, echoWords, echoSentences;
+        CheckBox tabSelects, nextWord, addSpace, smartPunct, spelling, learn, terminals, speakHover, speakChosen, echoLetters, echoWords, echoSentences;
         TrackBar rate, volume;
         Button fontButton;
         TextBox hotRead, hotToggle, excluded, abbreviations, newWord;
@@ -149,19 +149,21 @@ namespace Plume
             {
                 L.T("sous le curseur de texte", "below the text cursor"), L.T("position fixe (glisser la liste)", "fixed (drag the list)")
             }, (int)s.Placement, 230, 116, 260);
-            nextWord = AddCheck(p, L.T("Proposer le mot suivant après une espace", "Suggest the next word after a space"), s.PredictNextWord, 12, 160);
-            addSpace = AddCheck(p, L.T("Ajouter une espace après le mot choisi", "Add a space after the chosen word"), s.AddSpace, 12, 188);
+            tabSelects = AddCheck(p, L.T("Tab choisit le premier mot pendant la frappe d'un mot",
+                "Tab chooses the first word while typing a word"), s.TabSelectsFirst, 12, 160);
+            nextWord = AddCheck(p, L.T("Proposer le mot suivant après une espace", "Suggest the next word after a space"), s.PredictNextWord, 12, 188);
+            addSpace = AddCheck(p, L.T("Ajouter une espace après le mot choisi", "Add a space after the chosen word"), s.AddSpace, 12, 216);
             smartPunct = AddCheck(p, L.T("Ponctuation intelligente (retirer l'espace avant . , )",
-                "Smart punctuation (remove the space before . , )"), s.SmartPunctuation, 12, 216);
+                "Smart punctuation (remove the space before . , )"), s.SmartPunctuation, 12, 244);
             spelling = AddCheck(p, L.T("Aide orthographique (mots qui se prononcent de la même façon)",
-                "Spelling help (words that sound the same)"), s.SpellingHelp, 12, 244);
+                "Spelling help (words that sound the same)"), s.SpellingHelp, 12, 272);
             var help = new Label
             {
-                Text = L.T("Astuce : appuyez sur Échap pour masquer la liste et taper un chiffre.\n"
+                Text = L.T("Astuce : appuyez sur Échap pour masquer la liste, puis tapez un chiffre ou une tabulation. "
                          + "Sur un clavier AZERTY, utilisez le pavé numérique ou Maj + chiffre.",
-                           "Tip: press Esc to hide the list and type a digit.\n"
+                           "Tip: press Esc to hide the list, then type a digit or a Tab. "
                          + "On an AZERTY keyboard, use the numeric keypad or Shift + digit."),
-                Location = new Point(12, 290), Size = new Size(490, 48), ForeColor = SystemColors.GrayText
+                Location = new Point(12, 318), Size = new Size(498, 70), ForeColor = SystemColors.GrayText
             };
             p.Controls.Add(help);
             return p;
@@ -223,11 +225,14 @@ namespace Plume
             for (int i = 0; i < themeNames.Length; i++)
                 themeNames[i] = Theme.DisplayName(Theme.Names[i]);
             theme = AddCombo(p, themeNames, Array.IndexOf(Theme.Names, s.Theme), 170, 98, 250);
+            AddLabel(p, L.T("Barre d'outils :", "Toolbar:"), 12, 142);
+            toolbarStyle = AddCombo(p, new[] { L.T("icônes et texte", "icons and text"), L.T("icônes seulement", "icons only") },
+                s.ToolbarIconsOnly ? 1 : 0, 170, 140, 250);
             var note = new Label
             {
                 Text = L.T("Polices adaptées à la dyslexie : installez par exemple OpenDyslexic ou Andika,\npuis choisissez-la ci-dessus.",
                            "Dyslexia-friendly fonts: install for example OpenDyslexic or Andika,\nthen choose it above."),
-                Location = new Point(12, 142), Size = new Size(490, 48), ForeColor = SystemColors.GrayText
+                Location = new Point(12, 184), Size = new Size(490, 48), ForeColor = SystemColors.GrayText
             };
             p.Controls.Add(note);
             return p;
@@ -386,6 +391,7 @@ namespace Plume
             s.Language = language.SelectedIndex == 1 ? "en" : "fr";
             s.PredictionCount = (int)count.Value;
             s.Keys = (SelectionKeys)keys.SelectedIndex;
+            s.TabSelectsFirst = tabSelects.Checked;
             s.Placement = (Placement)placement.SelectedIndex;
             s.PredictNextWord = nextWord.Checked;
             s.AddSpace = addSpace.Checked;
@@ -403,6 +409,7 @@ namespace Plume
             s.FontName = fontName;
             s.FontSize = fontSize;
             s.Theme = Theme.Names[Math.Max(0, theme.SelectedIndex)];
+            s.ToolbarIconsOnly = toolbarStyle.SelectedIndex == 1;
             s.InterfaceLanguage = uiLang.SelectedIndex == 1 ? "en" : "fr";
             s.Learn = learn.Checked;
             s.MinLearnCount = (int)minLearn.Value;

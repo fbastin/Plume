@@ -27,6 +27,7 @@ namespace Plume
         public bool PredictionEnabled = true;
         public int PredictionCount = 5;
         public SelectionKeys Keys = SelectionKeys.Digits;
+        public bool TabSelectsFirst = true;     // Tab choisit le premier mot pendant la frappe d'un mot
         public bool PredictNextWord = true;
         public bool AddSpace = true;
         public bool SmartPunctuation = true;
@@ -56,6 +57,7 @@ namespace Plume
         public string Theme = "Clair";
         public string InterfaceLanguage = "";   // langue des menus et fenêtres : fr ou en
         public bool ToolbarVisible = true;
+        public bool ToolbarIconsOnly = false;   // barre plus compacte : les libellés passent dans les bulles d'aide
         public int ToolbarX = -1;
         public int ToolbarY = -1;
 
