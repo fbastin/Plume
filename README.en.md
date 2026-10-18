@@ -143,6 +143,7 @@ Source code comments are written in French.
 ## Licenses
 
 - **Code**: [MIT](LICENSE) license.
+- **Signing**: see the [Code signing policy](CODE_SIGNING_POLICY.md).
 - **Dictionaries** (`data/fr.plm`, `data/en.plm`): CC BY-SA 4.0 license, see [data/LICENSE.md](data/LICENSE.md).
   They only contain **aggregated counts** (frequencies of words and of 2- or 3-word sequences),
   computed from [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles, CC BY-SA 4.0),

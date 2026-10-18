@@ -144,6 +144,7 @@ Les commentaires du code source sont en français.
 ## Licences
 
 - **Code** : licence [MIT](LICENSE).
+- **Signature** : voir la politique de signature du code ([Code signing policy](CODE_SIGNING_POLICY.md)).
 - **Dictionnaires** (`data/fr.plm`, `data/en.plm`) : licence CC BY-SA 4.0, voir [data/LICENSE.md](data/LICENSE.md).
   Ils contiennent uniquement des **comptes agrégés** (fréquences de mots et de suites de 2 ou 3 mots),
   calculés à partir de [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles, CC BY-SA 4.0),
