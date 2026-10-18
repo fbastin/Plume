@@ -122,6 +122,25 @@ namespace Plume
             var reloaded = new UserModel("fr", profile);
             Check(reloaded.Count("kerbouc") == 3, "profil enregistré et relu");
 
+            // Tout oublier : mots et enchaînements effacés, abréviations et mots refusés conservés.
+            pf.User.Block("truc");
+            pf.User.ForgetLearned();
+            pf.User.Save();
+            Check(Predict(pf, "mon K", true, 9).All(w => w != "Kerbouc"), "mot oublié n'est plus proposé");
+            var forgotten = new UserModel("fr", profile);
+            string saved = File.ReadAllText(Path.Combine(profile, "mots_fr.txt"));
+            Check(forgotten.Count("kerbouc") == 0 && forgotten.Bigram("mon", "kerbouc") == 0 && forgotten.Total == 0,
+                "plus aucun mot appris après « tout oublier »");
+            Check(!saved.Contains("\nW\t") && !saved.Contains("\nB\t") && !saved.ToLowerInvariant().Contains("kerbouc"),
+                "le fichier ne contient plus de mots ni d'enchaînements");
+            Check(forgotten.IsBlocked("truc") && forgotten.Expand("bjr") == "bonjour", "abréviations et mots refusés conservés");
+
+            // Terminaux : on n'y prédit rien par défaut (invites de mot de passe non protégées).
+            Check(Terminals.Is("CASCADIA_HOSTING_WINDOW_CLASS", "windowsterminal"), "Windows Terminal reconnu");
+            Check(Terminals.Is("ConsoleWindowClass", "cmd"), "invite de commandes reconnue");
+            Check(Terminals.Is("Whatever", "PowerShell") && Terminals.Is("Whatever", "wsl"), "PowerShell et WSL reconnus");
+            Check(!Terminals.Is("Notepad", "notepad") && !Terminals.Is("Chrome_WidgetWin_1", "chrome"), "éditeurs et navigateurs non concernés");
+
             // Vitesse
             string[] samples = { "Je ", "Il y ", "l'éc", "Nous somm", "otomob", "Je vais à la m", "d", "pr" };
             sw.Restart();

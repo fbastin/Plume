@@ -57,7 +57,7 @@ Sans installation, `bin\Plume.exe` se lance aussi directement (le dossier `bin` 
 | Entendre un mot de la liste | passer la souris dessus |
 | Ne plus voir un mot | clic droit sur le mot → *Ne plus proposer* |
 | Lire la sélection (ou la dernière phrase) | bouton **Lire** ou **Ctrl+Maj+F12** (rappuyer pour arrêter) |
-| Activer / désactiver la prédiction | bouton **Prédire** ou **Ctrl+Maj+F11** |
+| Mettre Plume en pause (ni suggestions, ni apprentissage) | bouton **Prédire** ou **Ctrl+Maj+F11** |
 | Ouvrir le menu (langue d'écriture, démarrage avec Windows, dossier des mots…) | clic droit sur la barre d'outils ou sur l'icône de Plume |
 | Quitter Plume | bouton **×** de la barre d'outils, ou menu → *Quitter Plume* |
 
@@ -67,10 +67,24 @@ l'icône peut être rangée derrière la flèche **^** de la barre des tâches).
 
 ## Vie privée
 
-- Tout reste sur l'ordinateur : réglages, mots appris et abréviations sont dans `%APPDATA%\Plume`
-  (menu de l'icône → *Ouvrir le dossier de mes mots*).
-- Plume ne prédit rien et n'apprend rien dans les **champs de mot de passe**, ni dans les
-  applications exclues (gestionnaires de mots de passe par défaut ; liste modifiable dans les options).
+Pour apprendre, Plume note les mots que vous tapez. Voici exactement ce qu'il garde, et comment le contrôler.
+
+- **Ce qui est noté** : `%APPDATA%\Plume\mots_fr.txt` (et `mots_en.txt`) contient, **en clair**, les mots
+  tapés dans toutes les applications et les paires de mots consécutifs, avec leur nombre d'occurrences.
+  Ce n'est pas le texte lui-même (ni l'ordre des phrases, ni les dates), mais on peut y lire des noms,
+  des sujets ou des morceaux d'adresses. Menu de l'icône → *Ouvrir le dossier de mes mots* pour le consulter.
+- **Où** : ce fichier ne quitte jamais l'ordinateur, mais tout programme lancé sous votre compte peut le lire ;
+  dans un profil itinérant (école, entreprise), le dossier `%APPDATA%` est recopié sur le serveur.
+- **Ce qui n'est jamais noté** : ce que vous tapez dans les **champs de mot de passe** ; dans les **terminaux**
+  (Windows Terminal, invite de commandes, PowerShell, WSL, PuTTY…), dont les invites de mot de passe, comme
+  celles de `sudo` ou `ssh`, ne se déclarent pas à Windows (une option les réactive) ; dans les applications
+  exclues (gestionnaires de mots de passe par défaut, liste modifiable dans les options) ; et tout ce que vous
+  tapez quand la prédiction est **désactivée** (bouton **Prédire** ou **Ctrl+Maj+F11**). Les nombres non plus.
+- **Limites** : un mot de passe tapé dans un champ ordinaire (certains sites ou logiciels n'utilisent pas de
+  vrai champ de mot de passe) est traité comme du texte. Les terminaux intégrés à un autre programme (celui de
+  VS Code, par exemple) ne sont pas reconnus : ajoutez ce programme aux applications exclues si besoin.
+- **Tout effacer** : *Options → Vocabulaire → Oublier tout ce que Plume a appris* (les abréviations et les mots
+  refusés sont conservés). Pour ne plus rien apprendre : décocher *Apprendre les mots que j'utilise*.
 - Le journal `plume.log` ne contient jamais le texte tapé ou lu.
 
 ## Limites connues

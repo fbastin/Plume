@@ -29,7 +29,7 @@ if errorlevel 1 exit /b 1
 if /i "%1"=="test" (
   "%FW%\csc.exe" /nologo /target:exe /optimize+ /codepage:65001 /out:"%OUT%\PlumeTests.exe" ^
     "%ROOT%tests\EngineTests.cs" "%ROOT%src\Tokenizer.cs" "%ROOT%src\TextUtil.cs" "%ROOT%src\LanguageModel.cs" ^
-    "%ROOT%src\UserModel.cs" "%ROOT%src\Predictor.cs" "%ROOT%src\Settings.cs" "%ROOT%src\Strings.cs"
+    "%ROOT%src\UserModel.cs" "%ROOT%src\Predictor.cs" "%ROOT%src\Settings.cs" "%ROOT%src\Strings.cs" "%ROOT%src\Terminals.cs"
   if errorlevel 1 exit /b 1
   "%OUT%\PlumeTests.exe" "%OUT%\data"
   if errorlevel 1 exit /b 1

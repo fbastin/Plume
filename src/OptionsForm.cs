@@ -16,7 +16,7 @@ namespace Plume
         ComboBox language, keys, placement, voiceFr, voiceEn, theme, uiLang;
         TabControl tabs;
         NumericUpDown count, minLearn;
-        CheckBox nextWord, addSpace, smartPunct, spelling, learn, speakHover, speakChosen, echoLetters, echoWords, echoSentences;
+        CheckBox nextWord, addSpace, smartPunct, spelling, learn, terminals, speakHover, speakChosen, echoLetters, echoWords, echoSentences;
         TrackBar rate, volume;
         Button fontButton;
         TextBox hotRead, hotToggle, excluded, abbreviations, newWord;
@@ -264,6 +264,12 @@ namespace Plume
             p.Controls.Add(blockedList);
             var unblock = new Button { Text = L.T("Proposer à nouveau", "Suggest again"), Location = new Point(270, 272), Size = new Size(150, 26) };
             p.Controls.Add(unblock);
+            var forget = new Button
+            {
+                Text = L.T("Oublier tout ce que Plume a appris", "Forget everything Plume has learned"),
+                Location = new Point(270, 302), Size = new Size(240, 26)
+            };
+            p.Controls.Add(forget);
 
             AddLabel(p, L.T("Abréviations (une par ligne : abréviation = texte) :", "Abbreviations (one per line: abbreviation = text):"), 12, 336);
             abbreviations = new TextBox
@@ -306,6 +312,25 @@ namespace Plume
                     refresh();
                 }
             };
+            forget.Click += delegate
+            {
+                if (MessageBox.Show(this, L.T(
+                        "Effacer tous les mots et enchaînements que Plume a appris ou que vous avez ajoutés, en français et en anglais ?\n\n"
+                        + "Les abréviations et les mots à ne plus proposer sont conservés.",
+                        "Erase all the words and word pairs that Plume has learned or that you added, in French and English?\n\n"
+                        + "Abbreviations and words never to suggest are kept."), "Plume",
+                        MessageBoxButtons.YesNo, MessageBoxIcon.Warning, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
+                    return;
+                foreach (string lang in new[] { "fr", "en" })
+                {
+                    UserModel u = userFor(lang);
+                    if (u == null)
+                        continue;
+                    u.ForgetLearned();
+                    u.Save(); // le fichier est réécrit tout de suite, sans attendre la fermeture
+                }
+                refresh();
+            };
             unblock.Click += delegate
             {
                 if (vocabUser != null && blockedList.SelectedItem != null)
@@ -338,11 +363,17 @@ namespace Plume
                 "Applications where Plume stays silent\n(program names separated by ;):"), 12, 118);
             excluded = new TextBox { Text = s.ExcludedApps, Location = new Point(12, 158), Width = 498 };
             p.Controls.Add(excluded);
+            terminals = AddCheck(p, L.T("Utiliser Plume aussi dans les terminaux (mots de passe non protégés)",
+                "Also use Plume in terminals (password prompts are not protected)"), s.PredictInTerminals, 12, 192);
             var priv = new Label
             {
-                Text = L.T("Plume ne fait rien dans les champs de mot de passe. Les mots appris restent sur\ncet ordinateur (dossier %APPDATA%\\Plume).",
-                           "Plume does nothing in password fields. Learned words stay on\nthis computer (%APPDATA%\\Plume folder)."),
-                Location = new Point(12, 196), Size = new Size(498, 48), ForeColor = SystemColors.GrayText
+                Text = L.T("Plume ne fait rien dans les champs de mot de passe, et n'apprend rien quand la prédiction est "
+                         + "désactivée. Les mots tapés et leurs enchaînements sont notés en clair dans le dossier "
+                         + "%APPDATA%\\Plume, qui ne quitte pas l'ordinateur (voir Vocabulaire pour tout effacer).",
+                           "Plume does nothing in password fields, and learns nothing while prediction is turned off. "
+                         + "Typed words and word pairs are stored in plain text in the %APPDATA%\\Plume folder, "
+                         + "which never leaves the computer (see Vocabulary to erase everything)."),
+                Location = new Point(12, 228), Size = new Size(498, 100), ForeColor = SystemColors.GrayText
             };
             p.Controls.Add(priv);
             return p;
@@ -378,6 +409,7 @@ namespace Plume
             s.HotkeyRead = hotRead.Text.Trim();
             s.HotkeyToggle = hotToggle.Text.Trim();
             s.ExcludedApps = excluded.Text.Trim();
+            s.PredictInTerminals = terminals.Checked;
         }
 
         /// <summary>Applique les réglages ; renvoie faux si un raccourci est invalide.</summary>

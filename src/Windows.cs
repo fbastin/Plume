@@ -433,7 +433,7 @@ namespace Plume
         /// <summary>Libellés et bulles d'aide dans la langue de l'interface.</summary>
         public void Localize()
         {
-            Set("predict", L.T("Prédire", "Predict"), L.T("Prédiction de mots (activer / désactiver)", "Word prediction (on / off)"));
+            Set("predict", L.T("Prédire", "Predict"), L.T("Prédiction et apprentissage des mots (activer / désactiver)", "Word prediction and learning (on / off)"));
             Set("speech", L.T("Parler", "Speak"), L.T("Retour vocal (activer / désactiver)", "Speech feedback (on / off)"));
             Set("read", L.T("Lire", "Read"), L.T("Lire la sélection ou la dernière phrase", "Read the selection or the last sentence"));
             Set("lang", null, L.T("Changer la langue d'écriture", "Switch writing language"));

@@ -8,7 +8,7 @@ using System.Windows.Forms;
 [assembly: AssemblyTitle("Installation de Plume / Plume setup")]
 [assembly: AssemblyDescription("Installe Plume pour l'utilisateur courant / Installs Plume for the current user")]
 [assembly: AssemblyProduct("Plume")]
-[assembly: AssemblyVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.1.0")]
 
 namespace Plume
 {

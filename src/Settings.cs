@@ -32,6 +32,7 @@ namespace Plume
         public bool SmartPunctuation = true;
         public bool SpellingHelp = true;
         public bool Learn = true;
+        public bool PredictInTerminals = false; // leurs invites de mot de passe ne sont pas protégées
         public int MinLearnCount = 3;
         public Placement Placement = Placement.FollowCaret;
         public int FixedX = -1;

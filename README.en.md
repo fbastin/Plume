@@ -56,7 +56,7 @@ Without installing, `bin\Plume.exe` also runs directly (the `bin` folder is self
 | Hear a word from the list | hover over it with the mouse |
 | Stop seeing a word | right-click the word → *Never suggest* |
 | Read the selection (or the last sentence) | **Read** button or **Ctrl+Shift+F12** (press again to stop) |
-| Turn word prediction on / off | **Predict** button or **Ctrl+Shift+F11** |
+| Pause Plume (no suggestions, no learning) | **Predict** button or **Ctrl+Shift+F11** |
 | Open the menu (writing language, start with Windows, words folder…) | right-click the toolbar or Plume's icon |
 | Quit Plume | **×** button on the toolbar, or menu → *Quit Plume* |
 
@@ -66,10 +66,24 @@ behind the **^** arrow of the taskbar).
 
 ## Privacy
 
-- Everything stays on the computer: settings, learned words and abbreviations are in `%APPDATA%\Plume`
-  (icon menu → *Open my words folder*).
-- Plume predicts nothing and learns nothing in **password fields**, nor in excluded applications
-  (password managers by default; the list can be edited in the options).
+To learn, Plume records the words you type. Here is exactly what it keeps, and how to control it.
+
+- **What is recorded**: `%APPDATA%\Plume\mots_fr.txt` (and `mots_en.txt`) contains, **in plain text**, the words
+  typed in every application and the pairs of consecutive words, with how often they occur. It is not the text
+  itself (no sentence order, no dates), but names, topics or pieces of addresses can be read in it.
+  Icon menu → *Open my words folder* to look at it.
+- **Where**: this file never leaves the computer, but any program running under your account can read it;
+  with a roaming profile (school, company), the `%APPDATA%` folder is copied to the server.
+- **What is never recorded**: what you type in **password fields**; in **terminals** (Windows Terminal, command
+  prompt, PowerShell, WSL, PuTTY…), whose password prompts, such as those of `sudo` or `ssh`, do not declare
+  themselves to Windows (an option turns terminals back on); in excluded applications (password managers by
+  default, the list can be edited in the options); and anything you type while prediction is **turned off**
+  (**Predict** button or **Ctrl+Shift+F11**). Numbers are not recorded either.
+- **Limits**: a password typed in an ordinary field (some websites or programs do not use a real password field)
+  is treated as text. Terminals built into another program (VS Code's, for instance) are not recognized: add that
+  program to the excluded applications if needed.
+- **Erase everything**: *Options → Vocabulary → Forget everything Plume has learned* (abbreviations and blocked
+  words are kept). To stop learning altogether: uncheck *Learn the words I use*.
 - The `plume.log` file never contains the text you type or have read aloud.
 
 ## Known limitations

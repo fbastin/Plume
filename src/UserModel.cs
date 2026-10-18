@@ -132,6 +132,17 @@ namespace Plume
             Dirty = true;
         }
 
+        /// <summary>Efface les mots et enchaînements appris ou ajoutés ; abréviations et mots refusés restent.</summary>
+        public void ForgetLearned()
+        {
+            words.Clear();
+            bigrams.Clear();
+            recent.Clear();
+            recentCounts.Clear();
+            Total = 0;
+            Dirty = true;
+        }
+
         public void AddWord(string word, int count)
         {
             string lower = word.ToLowerInvariant();

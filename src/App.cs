@@ -13,7 +13,7 @@ using Timer = System.Windows.Forms.Timer;
 [assembly: System.Reflection.AssemblyTitle("Plume")]
 [assembly: System.Reflection.AssemblyDescription("Assistant d'écriture / Writing assistant")]
 [assembly: System.Reflection.AssemblyProduct("Plume")]
-[assembly: System.Reflection.AssemblyVersion("1.0.0.0")]
+[assembly: System.Reflection.AssemblyVersion("1.0.1.0")]
 [assembly: System.Runtime.Versioning.TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
 
 namespace Plume
@@ -563,7 +563,9 @@ namespace Plume
 
         void Learn(string prev, string word, bool sentenceStart)
         {
-            if (!settings.Learn || !learnAllowed || predictor == null || word.Length < 2 || word.IndexOf(' ') >= 0)
+            // Prédiction désactivée (bouton Prédire, Ctrl+Maj+F11) : c'est une pause complète, rien n'est noté.
+            if (!settings.Learn || !settings.PredictionEnabled || !learnAllowed || predictor == null
+                || word.Length < 2 || word.IndexOf(' ') >= 0)
                 return;
             LanguageModel lm = predictor.Model;
             if (lm.IdOf(word) < 0)
@@ -711,9 +713,9 @@ namespace Plume
             });
         }
 
-        bool IsExcluded(IntPtr fg)
+        string ProcessNameOf(IntPtr hwnd)
         {
-            uint pid = Native.ProcessIdOf(fg);
+            uint pid = Native.ProcessIdOf(hwnd);
             string name;
             if (!processNames.TryGetValue(pid, out name))
             {
@@ -722,6 +724,22 @@ namespace Plume
                     processNames.Clear();
                 processNames[pid] = name;
             }
+            return name;
+        }
+
+        bool IsTerminal(IntPtr hwnd)
+        {
+            var sb = new StringBuilder(64);
+            Native.GetClassName(hwnd, sb, sb.Capacity);
+            return Terminals.Is(sb.ToString(), ProcessNameOf(hwnd));
+        }
+
+        bool IsExcluded(IntPtr fg)
+        {
+            // Les invites de mot de passe des terminaux (sudo, ssh) ne sont pas protégées par Windows.
+            if (!settings.PredictInTerminals && IsTerminal(fg))
+                return true;
+            string name = ProcessNameOf(fg);
             foreach (string ex in settings.ExcludedApps.Split(';', ','))
             {
                 string n = ex.Trim().ToLowerInvariant();
@@ -877,15 +895,6 @@ namespace Plume
                 ReadAloud();
             else if (id == 2)
                 Toggle("predict");
-        }
-
-        static bool IsTerminal(IntPtr hwnd)
-        {
-            var sb = new StringBuilder(64);
-            Native.GetClassName(hwnd, sb, sb.Capacity);
-            string c = sb.ToString();
-            return c == "ConsoleWindowClass" || c == "CASCADIA_HOSTING_WINDOW_CLASS" || c == "PseudoConsoleWindow"
-                || c == "mintty" || c == "VirtualConsoleClass" || c == "PuTTY";
         }
 
         Task<object> RunWorker(string slot, Func<object> work, int timeoutMs)
