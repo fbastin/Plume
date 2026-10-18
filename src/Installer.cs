@@ -20,7 +20,10 @@ namespace Plume
     /// </summary>
     internal static class Installer
     {
-        public const string Description = "Assistant d'écriture : prédiction de mots et lecture à voix haute";
+        public static string Description
+        {
+            get { return L.T("Assistant d'écriture : prédiction de mots et lecture à voix haute", "Writing assistant: word prediction and reading aloud"); }
+        }
 
         // Pour les tests : PLUME_INSTALL_TEST=dossier redirige fichiers, raccourcis et registre vers un bac à sable.
         static readonly string TestRoot = Environment.GetEnvironmentVariable("PLUME_INSTALL_TEST");
@@ -224,7 +227,7 @@ namespace Plume
         /// <summary>Désinstalle Plume (lancé par Windows via « Plume.exe --uninstall »).</summary>
         public static void Uninstall(bool quiet)
         {
-            if (!quiet && MessageBox.Show("Désinstaller Plume ?", "Plume", MessageBoxButtons.YesNo,
+            if (!quiet && MessageBox.Show(L.T("Désinstaller Plume ?", "Uninstall Plume?"), "Plume", MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) != DialogResult.Yes)
                 return;
             StopRunning();
@@ -234,8 +237,10 @@ namespace Plume
             Registry.CurrentUser.DeleteSubKeyTree(UninstallKey, false);
 
             if (!quiet && Directory.Exists(ProfileFolder) && MessageBox.Show(
-                    "Supprimer aussi vos mots appris, abréviations et réglages ?\n\nSi vous répondez Non, ils seront retrouvés "
-                    + "en cas de réinstallation.\n(" + ProfileFolder + ")", "Plume", MessageBoxButtons.YesNo,
+                    L.T("Supprimer aussi vos mots appris, abréviations et réglages ?\n\nSi vous répondez Non, ils seront retrouvés "
+                        + "en cas de réinstallation.",
+                        "Also delete your learned words, abbreviations and settings?\n\nIf you answer No, they will be kept "
+                        + "for a future reinstallation.") + "\n(" + ProfileFolder + ")", "Plume", MessageBoxButtons.YesNo,
                     MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
             {
                 try
@@ -244,11 +249,12 @@ namespace Plume
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Le dossier " + ProfileFolder + " n'a pas pu être supprimé : " + ex.Message, "Plume");
+                    MessageBox.Show(L.T("Le dossier " + ProfileFolder + " n'a pas pu être supprimé : ",
+                        "The folder " + ProfileFolder + " could not be deleted: ") + ex.Message, "Plume");
                 }
             }
             if (!quiet)
-                MessageBox.Show("Plume a été désinstallé.", "Plume", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(L.T("Plume a été désinstallé.", "Plume has been uninstalled."), "Plume", MessageBoxButtons.OK, MessageBoxIcon.Information);
             RemoveInstallDirAfterExit();
         }
 

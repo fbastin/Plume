@@ -13,7 +13,8 @@ namespace Plume
         readonly Action<string, Settings> testVoice;
         public event Action<Settings> Applied;
 
-        ComboBox language, keys, placement, voiceFr, voiceEn, theme;
+        ComboBox language, keys, placement, voiceFr, voiceEn, theme, uiLang;
+        TabControl tabs;
         NumericUpDown count, minLearn;
         CheckBox nextWord, addSpace, smartPunct, spelling, learn, speakHover, speakChosen, echoLetters, echoWords, echoSentences;
         TrackBar rate, volume;
@@ -45,7 +46,7 @@ namespace Plume
             ClientSize = new Size(560, 520);
             ShowInTaskbar = true;
 
-            var tabs = new TabControl { Location = new Point(10, 10), Size = new Size(540, 460) };
+            tabs = new TabControl { Location = new Point(10, 10), Size = new Size(540, 460) };
             tabs.TabPages.Add(PredictionPage());
             tabs.TabPages.Add(SpeechPage());
             tabs.TabPages.Add(AppearancePage());
@@ -55,8 +56,8 @@ namespace Plume
 
             // La fenêtre est ouverte sans bloquer Plume (Show) : DialogResult ne la fermerait pas, on ferme nous-mêmes.
             var ok = new Button { Text = "OK", Location = new Point(286, 480), Size = new Size(84, 28) };
-            var cancel = new Button { Text = "Annuler", Location = new Point(376, 480), Size = new Size(84, 28) };
-            var apply = new Button { Text = "Appliquer", Location = new Point(466, 480), Size = new Size(84, 28) };
+            var cancel = new Button { Text = L.T("Annuler", "Cancel"), Location = new Point(376, 480), Size = new Size(84, 28) };
+            var apply = new Button { Text = L.T("Appliquer", "Apply"), Location = new Point(466, 480), Size = new Size(84, 28) };
             ok.Click += delegate
             {
                 if (Apply())
@@ -75,6 +76,13 @@ namespace Plume
             ResumeLayout(false);
             PerformLayout();
             GrowButtonsToFit(this);
+        }
+
+        /// <summary>Onglet affiché (pour rouvrir la fenêtre au même endroit).</summary>
+        public int SelectedTab
+        {
+            get { return tabs.SelectedIndex; }
+            set { tabs.SelectedIndex = Math.Max(0, Math.Min(tabs.TabCount - 1, value)); }
         }
 
         /// <summary>Un bouton s'élargit si son texte ne tient pas (police plus grande, autre écran).</summary>
@@ -124,24 +132,35 @@ namespace Plume
 
         TabPage PredictionPage()
         {
-            var p = Page("Prédiction");
-            AddLabel(p, "Langue d'écriture :", 12, 16);
+            var p = Page(L.T("Prédiction", "Prediction"));
+            AddLabel(p, L.T("Langue d'écriture :", "Writing language:"), 12, 16);
             language = AddCombo(p, new[] { "Français", "English" }, s.Language == "en" ? 1 : 0, 230, 14, 260);
-            AddLabel(p, "Nombre de mots proposés :", 12, 50);
+            AddLabel(p, L.T("Nombre de mots proposés :", "Number of suggestions:"), 12, 50);
             count = new NumericUpDown { Minimum = 1, Maximum = 9, Value = s.PredictionCount, Location = new Point(230, 48), Width = 60 };
             p.Controls.Add(count);
-            AddLabel(p, "Choisir un mot avec :", 12, 84);
-            keys = AddCombo(p, new[] { "les chiffres 1 à 9", "les touches F1 à F9", "la souris seulement" }, (int)s.Keys, 230, 82, 260);
-            AddLabel(p, "Position de la liste :", 12, 118);
-            placement = AddCombo(p, new[] { "sous le curseur de texte", "position fixe (glisser la liste)" }, (int)s.Placement, 230, 116, 260);
-            nextWord = AddCheck(p, "Proposer le mot suivant après une espace", s.PredictNextWord, 12, 160);
-            addSpace = AddCheck(p, "Ajouter une espace après le mot choisi", s.AddSpace, 12, 188);
-            smartPunct = AddCheck(p, "Ponctuation intelligente (retirer l'espace avant . , )", s.SmartPunctuation, 12, 216);
-            spelling = AddCheck(p, "Aide orthographique (mots qui se prononcent de la même façon)", s.SpellingHelp, 12, 244);
+            AddLabel(p, L.T("Choisir un mot avec :", "Choose a word with:"), 12, 84);
+            keys = AddCombo(p, new[]
+            {
+                L.T("les chiffres 1 à 9", "the number keys 1 to 9"), L.T("les touches F1 à F9", "the F1 to F9 keys"),
+                L.T("la souris seulement", "the mouse only")
+            }, (int)s.Keys, 230, 82, 260);
+            AddLabel(p, L.T("Position de la liste :", "List position:"), 12, 118);
+            placement = AddCombo(p, new[]
+            {
+                L.T("sous le curseur de texte", "below the text cursor"), L.T("position fixe (glisser la liste)", "fixed (drag the list)")
+            }, (int)s.Placement, 230, 116, 260);
+            nextWord = AddCheck(p, L.T("Proposer le mot suivant après une espace", "Suggest the next word after a space"), s.PredictNextWord, 12, 160);
+            addSpace = AddCheck(p, L.T("Ajouter une espace après le mot choisi", "Add a space after the chosen word"), s.AddSpace, 12, 188);
+            smartPunct = AddCheck(p, L.T("Ponctuation intelligente (retirer l'espace avant . , )",
+                "Smart punctuation (remove the space before . , )"), s.SmartPunctuation, 12, 216);
+            spelling = AddCheck(p, L.T("Aide orthographique (mots qui se prononcent de la même façon)",
+                "Spelling help (words that sound the same)"), s.SpellingHelp, 12, 244);
             var help = new Label
             {
-                Text = "Astuce : appuyez sur Échap pour masquer la liste et taper un chiffre.\n"
-                     + "Sur un clavier AZERTY, utilisez le pavé numérique ou Maj + chiffre.",
+                Text = L.T("Astuce : appuyez sur Échap pour masquer la liste et taper un chiffre.\n"
+                         + "Sur un clavier AZERTY, utilisez le pavé numérique ou Maj + chiffre.",
+                           "Tip: press Esc to hide the list and type a digit.\n"
+                         + "On an AZERTY keyboard, use the numeric keypad or Shift + digit."),
                 Location = new Point(12, 290), Size = new Size(490, 48), ForeColor = SystemColors.GrayText
             };
             p.Controls.Add(help);
@@ -150,39 +169,41 @@ namespace Plume
 
         TabPage SpeechPage()
         {
-            var p = Page("Parole");
+            var p = Page(L.T("Parole", "Speech"));
             List<string> fr = Speaker.Voices("fr"), en = Speaker.Voices("en");
-            AddLabel(p, "Voix française :", 12, 16);
+            AddLabel(p, L.T("Voix française :", "French voice:"), 12, 16);
             voiceFr = AddCombo(p, fr.ToArray(), Math.Max(0, fr.IndexOf(s.VoiceFr)), 170, 14, 250);
-            AddLabel(p, "Voix anglaise :", 12, 50);
+            AddLabel(p, L.T("Voix anglaise :", "English voice:"), 12, 50);
             voiceEn = AddCombo(p, en.ToArray(), Math.Max(0, en.IndexOf(s.VoiceEn)), 170, 48, 250);
-            var test = new Button { Text = "Écouter", Location = new Point(430, 30), Size = new Size(80, 28) };
+            var test = new Button { Text = L.T("Écouter", "Listen"), Location = new Point(430, 30), Size = new Size(80, 28) };
             test.Click += delegate
             {
                 Collect();
                 testVoice(language.SelectedIndex == 1 ? "en" : "fr", s);
             };
             p.Controls.Add(test);
-            AddLabel(p, "Vitesse :", 12, 92);
+            AddLabel(p, L.T("Vitesse :", "Speed:"), 12, 92);
             rate = new TrackBar { Minimum = -10, Maximum = 10, Value = Math.Max(-10, Math.Min(10, s.Rate)), TickFrequency = 2, Location = new Point(170, 84), Width = 250 };
             p.Controls.Add(rate);
-            AddLabel(p, "Volume :", 12, 136);
+            AddLabel(p, L.T("Volume :", "Volume:"), 12, 136);
             volume = new TrackBar { Minimum = 0, Maximum = 100, Value = Math.Max(0, Math.Min(100, s.Volume)), TickFrequency = 10, Location = new Point(170, 128), Width = 250 };
             p.Controls.Add(volume);
-            AddLabel(p, "Lire à voix haute :", 12, 184);
-            speakHover = AddCheck(p, "les mots proposés quand la souris passe dessus", s.SpeakOnHover, 24, 210);
-            speakChosen = AddCheck(p, "le mot choisi dans la liste", s.SpeakChosen, 24, 236);
-            echoLetters = AddCheck(p, "chaque lettre tapée", s.EchoLetters, 24, 262);
-            echoWords = AddCheck(p, "chaque mot tapé", s.EchoWords, 24, 288);
-            echoSentences = AddCheck(p, "chaque phrase terminée (. ! ?)", s.EchoSentences, 24, 314);
+            AddLabel(p, L.T("Lire à voix haute :", "Read aloud:"), 12, 184);
+            speakHover = AddCheck(p, L.T("les mots proposés quand la souris passe dessus", "suggested words when the mouse hovers over them"), s.SpeakOnHover, 24, 210);
+            speakChosen = AddCheck(p, L.T("le mot choisi dans la liste", "the word chosen from the list"), s.SpeakChosen, 24, 236);
+            echoLetters = AddCheck(p, L.T("chaque lettre tapée", "each letter typed"), s.EchoLetters, 24, 262);
+            echoWords = AddCheck(p, L.T("chaque mot tapé", "each word typed"), s.EchoWords, 24, 288);
+            echoSentences = AddCheck(p, L.T("chaque phrase terminée (. ! ?)", "each finished sentence (. ! ?)"), s.EchoSentences, 24, 314);
             return p;
         }
 
         TabPage AppearancePage()
         {
-            var p = Page("Apparence");
-            AddLabel(p, "Police de la liste :", 12, 16);
-            fontButton = new Button { Location = new Point(170, 12), Size = new Size(250, 30) };
+            var p = Page(L.T("Apparence", "Appearance"));
+            AddLabel(p, L.T("Langue de l'interface :", "Interface language:"), 12, 16);
+            uiLang = AddCombo(p, new[] { "Français", "English" }, s.InterfaceLanguage == "en" ? 1 : 0, 170, 14, 250);
+            AddLabel(p, L.T("Police de la liste :", "List font:"), 12, 58);
+            fontButton = new Button { Location = new Point(170, 54), Size = new Size(250, 30) };
             UpdateFontButton();
             fontButton.Click += delegate
             {
@@ -197,12 +218,16 @@ namespace Plume
                 }
             };
             p.Controls.Add(fontButton);
-            AddLabel(p, "Couleurs :", 12, 58);
-            theme = AddCombo(p, Theme.Names, Array.IndexOf(Theme.Names, s.Theme), 170, 56, 250);
+            AddLabel(p, L.T("Couleurs :", "Colors:"), 12, 100);
+            var themeNames = new string[Theme.Names.Length];
+            for (int i = 0; i < themeNames.Length; i++)
+                themeNames[i] = Theme.DisplayName(Theme.Names[i]);
+            theme = AddCombo(p, themeNames, Array.IndexOf(Theme.Names, s.Theme), 170, 98, 250);
             var note = new Label
             {
-                Text = "Polices adaptées à la dyslexie : installez par exemple OpenDyslexic ou Andika,\npuis choisissez-la ci-dessus.",
-                Location = new Point(12, 100), Size = new Size(490, 48), ForeColor = SystemColors.GrayText
+                Text = L.T("Polices adaptées à la dyslexie : installez par exemple OpenDyslexic ou Andika,\npuis choisissez-la ci-dessus.",
+                           "Dyslexia-friendly fonts: install for example OpenDyslexic or Andika,\nthen choose it above."),
+                Location = new Point(12, 142), Size = new Size(490, 48), ForeColor = SystemColors.GrayText
             };
             p.Controls.Add(note);
             return p;
@@ -215,32 +240,32 @@ namespace Plume
 
         TabPage VocabularyPage()
         {
-            var p = Page("Vocabulaire");
-            learn = AddCheck(p, "Apprendre les mots que j'utilise", s.Learn, 12, 12);
-            AddLabel(p, "Proposer un mot nouveau après", 12, 42);
+            var p = Page(L.T("Vocabulaire", "Vocabulary"));
+            learn = AddCheck(p, L.T("Apprendre les mots que j'utilise", "Learn the words I use"), s.Learn, 12, 12);
+            AddLabel(p, L.T("Proposer un mot nouveau après", "Suggest a new word after"), 12, 42);
             minLearn = new NumericUpDown { Minimum = 1, Maximum = 10, Value = Math.Max(1, Math.Min(10, s.MinLearnCount)), Location = new Point(210, 40), Width = 50 };
             p.Controls.Add(minLearn);
-            AddLabel(p, "utilisations", 266, 42);
-            AddLabel(p, "Langue :", 360, 42);
+            AddLabel(p, L.T("utilisations", "uses"), 266, 42);
+            AddLabel(p, L.T("Langue :", "Language:"), 348, 42);
             vocabLang = AddCombo(p, new[] { "Français", "English" }, s.Language == "en" ? 1 : 0, 420, 40, 90);
 
-            AddLabel(p, "Mes mots :", 12, 76);
+            AddLabel(p, L.T("Mes mots :", "My words:"), 12, 76);
             learned = new ListBox { Location = new Point(12, 98), Size = new Size(240, 170), IntegralHeight = false };
             p.Controls.Add(learned);
             newWord = new TextBox { Location = new Point(12, 274), Width = 150 };
             p.Controls.Add(newWord);
-            var add = new Button { Text = "Ajouter", Location = new Point(166, 272), Size = new Size(86, 26) };
-            var remove = new Button { Text = "Retirer", Location = new Point(166, 302), Size = new Size(86, 26) };
+            var add = new Button { Text = L.T("Ajouter", "Add"), Location = new Point(166, 272), Size = new Size(86, 26) };
+            var remove = new Button { Text = L.T("Retirer", "Remove"), Location = new Point(166, 302), Size = new Size(86, 26) };
             p.Controls.Add(add);
             p.Controls.Add(remove);
 
-            AddLabel(p, "Mots à ne plus proposer :", 270, 76);
+            AddLabel(p, L.T("Mots à ne plus proposer :", "Words never to suggest:"), 270, 76);
             blockedList = new ListBox { Location = new Point(270, 98), Size = new Size(240, 170), IntegralHeight = false };
             p.Controls.Add(blockedList);
-            var unblock = new Button { Text = "Proposer à nouveau", Location = new Point(270, 272), Size = new Size(150, 26) };
+            var unblock = new Button { Text = L.T("Proposer à nouveau", "Suggest again"), Location = new Point(270, 272), Size = new Size(150, 26) };
             p.Controls.Add(unblock);
 
-            AddLabel(p, "Abréviations (une par ligne : abréviation = texte) :", 12, 336);
+            AddLabel(p, L.T("Abréviations (une par ligne : abréviation = texte) :", "Abbreviations (one per line: abbreviation = text):"), 12, 336);
             abbreviations = new TextBox
             {
                 Multiline = true, AcceptsReturn = true, ScrollBars = ScrollBars.Vertical,
@@ -295,25 +320,28 @@ namespace Plume
 
         TabPage ShortcutsPage()
         {
-            var p = Page("Raccourcis");
-            AddLabel(p, "Lire la sélection / arrêter :", 12, 16);
+            var p = Page(L.T("Raccourcis", "Shortcuts"));
+            AddLabel(p, L.T("Lire la sélection / arrêter :", "Read selection / stop:"), 12, 16);
             hotRead = new TextBox { Text = s.HotkeyRead, Location = new Point(230, 14), Width = 200 };
             p.Controls.Add(hotRead);
-            AddLabel(p, "Activer / désactiver la prédiction :", 12, 50);
+            AddLabel(p, L.T("Activer / désactiver la prédiction :", "Word prediction on / off:"), 12, 50);
             hotToggle = new TextBox { Text = s.HotkeyToggle, Location = new Point(230, 48), Width = 200 };
             p.Controls.Add(hotToggle);
             var hint = new Label
             {
-                Text = "Exemples : Ctrl+Shift+F12, Ctrl+Alt+L, Pause. Laisser vide pour aucun raccourci.",
+                Text = L.T("Exemples : Ctrl+Shift+F12, Ctrl+Alt+L, Pause. Laisser vide pour aucun raccourci.",
+                           "Examples: Ctrl+Shift+F12, Ctrl+Alt+L, Pause. Leave empty for no shortcut."),
                 Location = new Point(12, 80), Size = new Size(490, 22), ForeColor = SystemColors.GrayText
             };
             p.Controls.Add(hint);
-            AddLabel(p, "Applications où Plume reste silencieux\n(noms de programme séparés par ;) :", 12, 118);
+            AddLabel(p, L.T("Applications où Plume reste silencieux\n(noms de programme séparés par ;) :",
+                "Applications where Plume stays silent\n(program names separated by ;):"), 12, 118);
             excluded = new TextBox { Text = s.ExcludedApps, Location = new Point(12, 158), Width = 498 };
             p.Controls.Add(excluded);
             var priv = new Label
             {
-                Text = "Plume ne fait rien dans les champs de mot de passe. Les mots appris restent sur\ncet ordinateur (dossier %APPDATA%\\Plume).",
+                Text = L.T("Plume ne fait rien dans les champs de mot de passe. Les mots appris restent sur\ncet ordinateur (dossier %APPDATA%\\Plume).",
+                           "Plume does nothing in password fields. Learned words stay on\nthis computer (%APPDATA%\\Plume folder)."),
                 Location = new Point(12, 196), Size = new Size(498, 48), ForeColor = SystemColors.GrayText
             };
             p.Controls.Add(priv);
@@ -343,7 +371,8 @@ namespace Plume
             s.EchoSentences = echoSentences.Checked;
             s.FontName = fontName;
             s.FontSize = fontSize;
-            s.Theme = theme.SelectedItem as string ?? "Clair";
+            s.Theme = Theme.Names[Math.Max(0, theme.SelectedIndex)];
+            s.InterfaceLanguage = uiLang.SelectedIndex == 1 ? "en" : "fr";
             s.Learn = learn.Checked;
             s.MinLearnCount = (int)minLearn.Value;
             s.HotkeyRead = hotRead.Text.Trim();
@@ -360,7 +389,7 @@ namespace Plume
                 uint mods, vk;
                 if (hk.Length > 0 && !Hotkeys.TryParse(hk, out mods, out vk))
                 {
-                    MessageBox.Show(this, "Raccourci non reconnu : " + hk, "Plume", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    MessageBox.Show(this, L.T("Raccourci non reconnu : ", "Unrecognized shortcut: ") + hk, "Plume", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     return false;
                 }
             }

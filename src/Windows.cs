@@ -11,7 +11,19 @@ namespace Plume
         public string Name;
         public Color Back, Text, Muted, Hover, Border, Accent, AccentText, BadgeBack, BadgeText;
 
+        // Identifiants enregistrés dans les réglages (ne pas traduire) ; DisplayName donne le libellé affiché.
         public static readonly string[] Names = { "Clair", "Sombre", "Crème", "Contraste élevé" };
+
+        public static string DisplayName(string id)
+        {
+            switch (id)
+            {
+                case "Sombre": return L.T("Sombre", "Dark");
+                case "Crème": return L.T("Crème", "Cream");
+                case "Contraste élevé": return L.T("Contraste élevé", "High contrast");
+                default: return L.T("Clair", "Light");
+            }
+        }
 
         public static Theme Get(string name)
         {
@@ -408,13 +420,36 @@ namespace Plume
         public Toolbar()
         {
             Text = "Plume";
-            Add("predict", "", "Prédire", "Prédiction de mots (activer / désactiver)", true);
-            Add("speech", "", "Parler", "Retour vocal (activer / désactiver)", true);
-            Add("read", "", "Lire", "Lire la sélection ou la dernière phrase", false);
-            Add("lang", "", "FR", "Changer de langue", false);
-            Add("options", "", "", "Options", false);
-            Add("hide", "", "", "Masquer la barre (Plume continue de fonctionner)", false);
-            Add("quit", "", "", "Quitter Plume", false);
+            Add("predict", "", true);
+            Add("speech", "", true);
+            Add("read", "", false);
+            Add("lang", "", false);
+            Add("options", "", false);
+            Add("hide", "", false);
+            Add("quit", "", false);
+            Localize();
+        }
+
+        /// <summary>Libellés et bulles d'aide dans la langue de l'interface.</summary>
+        public void Localize()
+        {
+            Set("predict", L.T("Prédire", "Predict"), L.T("Prédiction de mots (activer / désactiver)", "Word prediction (on / off)"));
+            Set("speech", L.T("Parler", "Speak"), L.T("Retour vocal (activer / désactiver)", "Speech feedback (on / off)"));
+            Set("read", L.T("Lire", "Read"), L.T("Lire la sélection ou la dernière phrase", "Read the selection or the last sentence"));
+            Set("lang", null, L.T("Changer la langue d'écriture", "Switch writing language"));
+            Set("options", "", L.T("Options", "Options"));
+            Set("hide", "", L.T("Masquer la barre (Plume continue de fonctionner)", "Hide the toolbar (Plume keeps running)"));
+            Set("quit", "", L.T("Quitter Plume", "Quit Plume"));
+            if (IsHandleCreated)
+                Relayout();
+        }
+
+        void Set(string id, string label, string tipText)
+        {
+            Button b = Find(id);
+            if (label != null)
+                b.Label = label;
+            b.Tip = tipText;
         }
 
         /// <summary>Texte des boutons sans libellé quand la police d'icônes est absente.</summary>
@@ -429,9 +464,9 @@ namespace Plume
                 return f.Name == name;
         }
 
-        void Add(string id, string glyph, string label, string tipText, bool toggle)
+        void Add(string id, string glyph, bool toggle)
         {
-            buttons.Add(new Button { Id = id, Glyph = glyph, Label = label, Tip = tipText, Toggle = toggle });
+            buttons.Add(new Button { Id = id, Glyph = glyph, Label = "", Tip = "", Toggle = toggle });
         }
 
         Button Find(string id)
@@ -581,7 +616,7 @@ namespace Plume
             if (h != hover)
             {
                 hover = h;
-                tip.SetToolTip(this, h >= 0 ? buttons[h].Tip : "Déplacer la barre (clic droit : menu)");
+                tip.SetToolTip(this, h >= 0 ? buttons[h].Tip : L.T("Déplacer la barre (clic droit : menu)", "Drag to move (right-click: menu)"));
                 Invalidate();
             }
         }

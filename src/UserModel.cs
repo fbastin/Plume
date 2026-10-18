@@ -256,7 +256,8 @@ namespace Plume
             try
             {
                 var sb = new StringBuilder();
-                sb.Append("# Plume : mots appris (W mot nombre), enchaînements (B précédent mot nombre), mots refusés (X mot)\n");
+                sb.Append("# Plume : mots appris / learned words (W mot/word nombre/count), enchaînements / word pairs "
+                    + "(B précédent/previous mot/word nombre/count), mots refusés / blocked words (X mot/word)\n");
                 foreach (var kv in words)
                     sb.Append("W\t").Append(kv.Value.Form).Append('\t').Append(kv.Value.Count).Append('\n');
                 foreach (var kv in bigrams)
@@ -264,7 +265,7 @@ namespace Plume
                 foreach (string b in blocked)
                     sb.Append("X\t").Append(b).Append('\n');
                 WriteAtomic(path, sb.ToString());
-                WriteAtomic(abbrevPath, "# Une abréviation par ligne : abréviation = texte complet\r\n" + AbbreviationsText());
+                WriteAtomic(abbrevPath, "# Une abréviation par ligne : abréviation = texte complet\r\n# One abbreviation per line: abbreviation = full text\r\n" + AbbreviationsText());
                 Dirty = false;
             }
             catch (Exception ex)

@@ -23,7 +23,7 @@ namespace Plume
     internal sealed class Settings
     {
         // Prédiction
-        public string Language = "fr";
+        public string Language = "fr";          // langue d'écriture (dictionnaire, voix)
         public bool PredictionEnabled = true;
         public int PredictionCount = 5;
         public SelectionKeys Keys = SelectionKeys.Digits;
@@ -53,6 +53,7 @@ namespace Plume
         public string FontName = "Segoe UI";
         public float FontSize = 15f;
         public string Theme = "Clair";
+        public string InterfaceLanguage = "";   // langue des menus et fenêtres : fr ou en
         public bool ToolbarVisible = true;
         public int ToolbarX = -1;
         public int ToolbarY = -1;
@@ -75,7 +76,11 @@ namespace Plume
             try
             {
                 if (!File.Exists(FilePath))
+                {
+                    // Premier lancement : on suit la langue d'affichage de Windows.
+                    s.Language = s.InterfaceLanguage = L.WindowsLanguage();
                     return s;
+                }
                 foreach (string raw in File.ReadAllLines(FilePath, Encoding.UTF8))
                 {
                     string line = raw.Trim();
@@ -113,6 +118,9 @@ namespace Plume
             s.FontSize = Math.Max(8f, Math.Min(48f, s.FontSize));
             if (s.Language != "en")
                 s.Language = "fr";
+            // Profil antérieur à l'interface bilingue : l'interface était en français.
+            if (s.InterfaceLanguage != "en")
+                s.InterfaceLanguage = "fr";
             return s;
         }
 
@@ -120,7 +128,7 @@ namespace Plume
         {
             try
             {
-                var sb = new StringBuilder("; Réglages de Plume\r\n");
+                var sb = new StringBuilder("; Réglages de Plume / Plume settings\r\n");
                 foreach (FieldInfo f in typeof(Settings).GetFields(BindingFlags.Public | BindingFlags.Instance))
                 {
                     object v = f.GetValue(this);

@@ -23,13 +23,13 @@ rem Programme d'installation en un seul fichier : Plume et ses dictionnaires y s
   /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll ^
   /resource:"%OUT%\Plume.exe",Plume.exe /resource:"%OUT%\Plume.exe.config",Plume.exe.config ^
   /resource:"%ROOT%data\fr.plm",data/fr.plm /resource:"%ROOT%data\en.plm",data/en.plm ^
-  "%ROOT%setup\Setup.cs" "%ROOT%src\Installer.cs"
+  "%ROOT%setup\Setup.cs" "%ROOT%src\Installer.cs" "%ROOT%src\Strings.cs"
 if errorlevel 1 exit /b 1
 
 if /i "%1"=="test" (
   "%FW%\csc.exe" /nologo /target:exe /optimize+ /codepage:65001 /out:"%OUT%\PlumeTests.exe" ^
     "%ROOT%tests\EngineTests.cs" "%ROOT%src\Tokenizer.cs" "%ROOT%src\TextUtil.cs" "%ROOT%src\LanguageModel.cs" ^
-    "%ROOT%src\UserModel.cs" "%ROOT%src\Predictor.cs" "%ROOT%src\Settings.cs"
+    "%ROOT%src\UserModel.cs" "%ROOT%src\Predictor.cs" "%ROOT%src\Settings.cs" "%ROOT%src\Strings.cs"
   if errorlevel 1 exit /b 1
   "%OUT%\PlumeTests.exe" "%OUT%\data"
   if errorlevel 1 exit /b 1

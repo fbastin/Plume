@@ -11,7 +11,7 @@ using System.Windows.Forms;
 using Timer = System.Windows.Forms.Timer;
 
 [assembly: System.Reflection.AssemblyTitle("Plume")]
-[assembly: System.Reflection.AssemblyDescription("Assistant d'écriture : prédiction de mots et lecture à voix haute")]
+[assembly: System.Reflection.AssemblyDescription("Assistant d'écriture / Writing assistant")]
 [assembly: System.Reflection.AssemblyProduct("Plume")]
 [assembly: System.Reflection.AssemblyVersion("1.0.0.0")]
 [assembly: System.Runtime.Versioning.TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
@@ -41,6 +41,7 @@ namespace Plume
             if (uninstall)
             {
                 // Lancé par Windows depuis « Applications installées ».
+                L.Lang = L.FromProfile(Installer.ProfileFolder);
                 Application.EnableVisualStyles();
                 Installer.Uninstall(quiet);
                 return;
@@ -48,6 +49,7 @@ namespace Plume
             Settings.Folder = profile ?? Installer.ProfileFolder;
             Directory.CreateDirectory(Settings.Folder);
             string id = Installer.InstanceId(Settings.Folder);
+            L.Lang = L.FromProfile(Settings.Folder);
 
             if (quit)
             {
@@ -64,7 +66,8 @@ namespace Plume
             {
                 if (!created)
                 {
-                    MessageBox.Show("Plume est déjà ouvert (icône dans la zone de notification).", "Plume",
+                    MessageBox.Show(L.T("Plume est déjà ouvert (icône dans la zone de notification).",
+                        "Plume is already running (icon in the notification area)."), "Plume",
                         MessageBoxButtons.OK, MessageBoxIcon.Information);
                     return;
                 }
@@ -330,9 +333,11 @@ namespace Plume
             ShowToolbar(settings.ToolbarVisible);
             if (!File.Exists(Path.Combine(Settings.Folder, "reglages.ini")))
             {
-                tray.ShowBalloonTip(5000, "Plume est prêt",
-                    "Écrivez dans n'importe quelle application : les mots proposés apparaissent sous le curseur. "
-                    + "Choisissez-en un avec son chiffre.", ToolTipIcon.Info);
+                tray.ShowBalloonTip(5000, L.T("Plume est prêt", "Plume is ready"),
+                    L.T("Écrivez dans n'importe quelle application : les mots proposés apparaissent sous le curseur. "
+                        + "Choisissez-en un avec son chiffre.",
+                        "Type in any application: suggested words appear below the cursor. "
+                        + "Pick one with its number."), ToolTipIcon.Info);
                 settings.Save();
             }
         }
@@ -358,6 +363,16 @@ namespace Plume
 
         void ApplySettings(bool save)
         {
+            if (L.Lang != settings.InterfaceLanguage)
+            {
+                L.Lang = settings.InterfaceLanguage;
+                toolbar.Localize();
+                ContextMenuStrip old = tray.ContextMenuStrip;
+                tray.ContextMenuStrip = BuildTrayMenu();
+                if (old != null)
+                    old.Dispose();
+                UpdateReadButton();
+            }
             Theme theme = Theme.Get(settings.Theme);
             predWin.Configure(theme, settings.FontName, settings.FontSize, settings.Keys);
             predWin.Draggable = settings.Placement == Placement.Fixed;
@@ -415,7 +430,7 @@ namespace Plume
                 {
                     Log.Write("Chargement du modèle " + path + " : " + t.Exception.InnerException);
                     toolbar.SetLabel("lang", lang.ToUpperInvariant() + " !");
-                    tray.ShowBalloonTip(8000, "Plume", "Dictionnaire introuvable ou abîmé : " + path, ToolTipIcon.Error);
+                    tray.ShowBalloonTip(8000, "Plume", L.T("Dictionnaire introuvable ou abîmé : ", "Dictionary missing or damaged: ") + path, ToolTipIcon.Error);
                     return;
                 }
                 models[lang] = t.Result;
@@ -591,8 +606,8 @@ namespace Plume
             string word = snap.Words[index];
             IntPtr fg = Native.GetForegroundWindow();
             var menu = new ContextMenuStrip();
-            menu.Items.Add("Écouter « " + word + " »", null, delegate { speaker.SpeakAlways(word); });
-            menu.Items.Add("Ne plus proposer « " + word + " »", null, delegate
+            menu.Items.Add(L.T("Écouter « " + word + " »", "Listen to “" + word + "”"), null, delegate { speaker.SpeakAlways(word); });
+            menu.Items.Add(L.T("Ne plus proposer « " + word + " »", "Never suggest “" + word + "”"), null, delegate
             {
                 if (predictor != null)
                     predictor.User.Block(word);
@@ -917,7 +932,8 @@ namespace Plume
             Log.Write("Lecture (" + source + ") : " + (text == null ? 0 : text.Trim().Length) + " caractères");
             if (string.IsNullOrWhiteSpace(text))
             {
-                tray.ShowBalloonTip(3000, "Plume", "Sélectionnez du texte à lire, puis appuyez sur « Lire ».", ToolTipIcon.Info);
+                tray.ShowBalloonTip(3000, "Plume", L.T("Sélectionnez du texte à lire, puis appuyez sur « Lire ».",
+                    "Select some text, then press “Read”."), ToolTipIcon.Info);
                 return;
             }
             speaker.SpeakAlways(text);
@@ -981,9 +997,9 @@ namespace Plume
         void UpdateReadButton()
         {
             if (speaker.IsSpeaking)
-                toolbar.SetGlyph("read", "", "Arrêter");
+                toolbar.SetGlyph("read", "", L.T("Arrêter", "Stop"));
             else
-                toolbar.SetGlyph("read", "", "Lire");
+                toolbar.SetGlyph("read", "", L.T("Lire", "Read"));
         }
 
         // ---------------------------------------------------------------- barre d'outils et menu
@@ -1007,11 +1023,13 @@ namespace Plume
                     break;
                 case "hide":
                     ShowToolbar(false);
-                    tray.ShowBalloonTip(3000, "Plume", "Plume continue de fonctionner. Double-cliquez sur l'icône pour revoir la barre.", ToolTipIcon.Info);
+                    tray.ShowBalloonTip(3000, "Plume", L.T("Plume continue de fonctionner. Double-cliquez sur l'icône pour revoir la barre.",
+                        "Plume keeps running. Double-click the icon to bring the toolbar back."), ToolTipIcon.Info);
                     break;
                 case "quit":
                     // Confirmation : un clic de travers ne doit pas couper l'aide à l'écriture.
-                    if (MessageBox.Show(toolbar, "Quitter Plume ?\n\nLa prédiction de mots et la lecture s'arrêteront.", "Plume",
+                    if (MessageBox.Show(toolbar, L.T("Quitter Plume ?\n\nLa prédiction de mots et la lecture s'arrêteront.",
+                        "Quit Plume?\n\nWord prediction and reading aloud will stop."), "Plume",
                         MessageBoxButtons.YesNo, MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) == DialogResult.Yes)
                         ExitThread();
                     break;
@@ -1073,12 +1091,12 @@ namespace Plume
         ContextMenuStrip BuildTrayMenu()
         {
             var m = new ContextMenuStrip();
-            menuToolbar = new ToolStripMenuItem("Afficher la barre d'outils", null, delegate { ShowToolbar(!settings.ToolbarVisible); });
-            menuPredict = new ToolStripMenuItem("Prédiction de mots", null, delegate { Toggle("predict"); });
-            menuSpeech = new ToolStripMenuItem("Retour vocal", null, delegate { Toggle("speech"); });
+            menuToolbar = new ToolStripMenuItem(L.T("Afficher la barre d'outils", "Show toolbar"), null, delegate { ShowToolbar(!settings.ToolbarVisible); });
+            menuPredict = new ToolStripMenuItem(L.T("Prédiction de mots", "Word prediction"), null, delegate { Toggle("predict"); });
+            menuSpeech = new ToolStripMenuItem(L.T("Retour vocal", "Speech feedback"), null, delegate { Toggle("speech"); });
             menuFr = new ToolStripMenuItem("Français", null, delegate { SwitchLanguage("fr"); });
             menuEn = new ToolStripMenuItem("English", null, delegate { SwitchLanguage("en"); });
-            var lang = new ToolStripMenuItem("Langue");
+            var lang = new ToolStripMenuItem(L.T("Langue d'écriture", "Writing language"));
             lang.DropDownItems.Add(menuFr);
             lang.DropDownItems.Add(menuEn);
             m.Items.Add(menuToolbar);
@@ -1087,9 +1105,9 @@ namespace Plume
             m.Items.Add(menuSpeech);
             m.Items.Add(lang);
             m.Items.Add(new ToolStripSeparator());
-            m.Items.Add("Lire la sélection", null, delegate { ReadAloud(); });
+            m.Items.Add(L.T("Lire la sélection", "Read selection"), null, delegate { ReadAloud(); });
             m.Items.Add("Options…", null, delegate { ShowOptions(); });
-            menuStartup = new ToolStripMenuItem("Lancer Plume au démarrage de Windows", null, delegate
+            menuStartup = new ToolStripMenuItem(L.T("Lancer Plume au démarrage de Windows", "Start Plume with Windows"), null, delegate
             {
                 try
                 {
@@ -1102,9 +1120,9 @@ namespace Plume
                 UpdateTrayMenu();
             });
             m.Items.Add(menuStartup);
-            m.Items.Add("Ouvrir le dossier de mes mots", null, delegate { Process.Start("explorer.exe", "\"" + Settings.Folder + "\""); });
+            m.Items.Add(L.T("Ouvrir le dossier de mes mots", "Open my words folder"), null, delegate { Process.Start("explorer.exe", "\"" + Settings.Folder + "\""); });
             m.Items.Add(new ToolStripSeparator());
-            m.Items.Add("Quitter Plume", null, delegate { ExitThread(); });
+            m.Items.Add(L.T("Quitter Plume", "Quit Plume"), null, delegate { ExitThread(); });
             return m;
         }
 
@@ -1124,7 +1142,7 @@ namespace Plume
             catch (Exception)
             {
             }
-            tray.Text = "Plume (" + (Lang == "fr" ? "français" : "English") + ")";
+            tray.Text = "Plume (" + (Lang == "fr" ? L.T("français", "French") : L.T("anglais", "English")) + ")";
         }
 
         void ShowOptions()
@@ -1148,6 +1166,7 @@ namespace Plume
             }
             options.Applied += s =>
             {
+                bool uiLanguageChanged = s.InterfaceLanguage != settings.InterfaceLanguage;
                 int x = settings.ToolbarX, y = settings.ToolbarY, fx = settings.FixedX, fy = settings.FixedY;
                 bool tb = settings.ToolbarVisible, pe = settings.PredictionEnabled, se = settings.SpeechEnabled;
                 settings = s;
@@ -1160,6 +1179,8 @@ namespace Plume
                 settings.SpeechEnabled = se;
                 ApplySettings(true);
                 SaveUsers();
+                if (uiLanguageChanged)
+                    Ui(ReopenOptions);
             };
             options.FormClosed += delegate
             {
@@ -1169,6 +1190,17 @@ namespace Plume
             };
             options.Show();
             options.Activate();
+        }
+
+        /// <summary>Après « Appliquer » avec une autre langue d'interface : la fenêtre reparaît traduite.</summary>
+        void ReopenOptions()
+        {
+            if (options == null || options.IsDisposed || !options.Visible)
+                return; // fermée par « OK »
+            int tab = options.SelectedTab;
+            options.Close();
+            ShowOptions();
+            options.SelectedTab = tab;
         }
 
         /// <summary>Peut être appelé depuis n'importe quel fil.</summary>

@@ -1,5 +1,7 @@
 # Plume — assistant d'écriture pour Windows
 
+**Français** · [English](README.en.md)
+
 Plume aide à écrire dans **n'importe quelle application** (Word, navigateur, courriel, Bloc-notes…),
 à la manière de WordQ :
 
@@ -13,7 +15,9 @@ Plume aide à écrire dans **n'importe quelle application** (Word, navigateur, c
 - **Apprentissage** : Plume retient les mots et enchaînements que vous utilisez ; les mots nouveaux
   sont proposés après quelques utilisations (sauf s'ils ressemblent à une faute d'un mot connu).
 - **Abréviations** : « bjr » → *bonjour*, « svp » → *s'il vous plaît* (modifiables).
-- **Français et anglais**, avec bascule en un clic.
+- **Bilingue** : on écrit en français ou en anglais (bascule en un clic), et l'interface (menus,
+  options, installation) est en français ou en anglais (*Options → Apparence → Langue de l'interface* ;
+  par défaut, celle de Windows).
 - Thèmes (clair, sombre, crème, contraste élevé), police et taille au choix (ex. police pour dyslexie).
 
 ## Installer
@@ -54,7 +58,7 @@ Sans installation, `bin\Plume.exe` se lance aussi directement (le dossier `bin` 
 | Ne plus voir un mot | clic droit sur le mot → *Ne plus proposer* |
 | Lire la sélection (ou la dernière phrase) | bouton **Lire** ou **Ctrl+Maj+F12** (rappuyer pour arrêter) |
 | Activer / désactiver la prédiction | bouton **Prédire** ou **Ctrl+Maj+F11** |
-| Ouvrir le menu (langue, démarrage avec Windows, dossier des mots…) | clic droit sur la barre d'outils ou sur l'icône de Plume |
+| Ouvrir le menu (langue d'écriture, démarrage avec Windows, dossier des mots…) | clic droit sur la barre d'outils ou sur l'icône de Plume |
 | Quitter Plume | bouton **×** de la barre d'outils, ou menu → *Quitter Plume* |
 
 La barre d'outils se déplace en la faisant glisser par sa poignée. Le bouton **—** la masque sans
@@ -109,8 +113,11 @@ y sont alors redirigés.
 | `src/Accessibility.cs` | position du curseur, champ mot de passe, sélection (UI Automation / MSAA) |
 | `src/Speaker.cs` | synthèse vocale |
 | `src/Windows.cs`, `src/OptionsForm.cs` | liste de mots, barre d'outils, fenêtre d'options |
+| `src/Strings.cs` | langue de l'interface : chaque texte est écrit en français et en anglais, `L.T("Lire", "Read")` |
 | `src/Installer.cs`, `setup/Setup.cs` | installation, menu Démarrer, désinstallation |
 | `tools/build_lm.py` | construction des dictionnaires `data/*.plm` |
+
+Les commentaires du code source sont en français.
 
 ## Dictionnaires et licences des données
 

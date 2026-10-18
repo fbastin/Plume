@@ -5,8 +5,8 @@ using System.IO;
 using System.Reflection;
 using System.Windows.Forms;
 
-[assembly: AssemblyTitle("Installation de Plume")]
-[assembly: AssemblyDescription("Installe Plume pour l'utilisateur courant")]
+[assembly: AssemblyTitle("Installation de Plume / Plume setup")]
+[assembly: AssemblyDescription("Installe Plume pour l'utilisateur courant / Installs Plume for the current user")]
 [assembly: AssemblyProduct("Plume")]
 [assembly: AssemblyVersion("1.0.0.0")]
 
@@ -21,6 +21,8 @@ namespace Plume
         [STAThread]
         static int Main(string[] args)
         {
+            // Langue du profil Plume existant, sinon celle de Windows.
+            L.Lang = L.FromProfile(Installer.ProfileFolder);
             bool quiet = false, launch = true;
             foreach (string a in args)
             {
@@ -33,7 +35,8 @@ namespace Plume
             Dictionary<string, Func<Stream>> files = EmbeddedFiles();
             if (!files.ContainsKey("Plume.exe"))
             {
-                MessageBox.Show("Ce programme d'installation est incomplet (Plume.exe absent).", "Plume", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(L.T("Ce programme d'installation est incomplet (Plume.exe absent).",
+                    "This setup program is incomplete (Plume.exe is missing)."), "Plume", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return 2;
             }
             if (quiet)
@@ -89,7 +92,7 @@ namespace Plume
 
             // Coordonnées pour un écran à 100 % ; mise à l'échelle appliquée à la fin (ResumeLayout).
             SuspendLayout();
-            Text = update ? "Mise à jour de Plume" : "Installation de Plume";
+            Text = update ? L.T("Mise à jour de Plume", "Plume update") : L.T("Installation de Plume", "Plume setup");
             Font = new Font("Segoe UI", 10f);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             MaximizeBox = false;
@@ -114,7 +117,7 @@ namespace Plume
             }
             var title = new Label
             {
-                Text = update ? "Mettre à jour Plume" : "Installer Plume",
+                Text = update ? L.T("Mettre à jour Plume", "Update Plume") : L.T("Installer Plume", "Install Plume"),
                 Font = new Font("Segoe UI Semibold", 15f), Location = new Point(84, 18), AutoSize = true
             };
             var desc = new Label
@@ -124,28 +127,29 @@ namespace Plume
             };
             var where = new Label
             {
-                Text = "Dossier : " + Installer.InstallDir,
+                Text = L.T("Dossier : ", "Folder: ") + Installer.InstallDir,
                 Location = new Point(20, 92), Size = new Size(480, 40), ForeColor = SystemColors.GrayText
             };
             desktop = new CheckBox
             {
-                Text = "Ajouter un raccourci sur le Bureau",
+                Text = L.T("Ajouter un raccourci sur le Bureau", "Add a desktop shortcut"),
                 Checked = !update || File.Exists(Installer.DesktopShortcut), Location = new Point(20, 136), AutoSize = true
             };
             startup = new CheckBox
             {
-                Text = "Lancer Plume à l'ouverture de session",
+                Text = L.T("Lancer Plume à l'ouverture de session", "Start Plume when I sign in"),
                 Checked = Installer.StartsWithWindows, Location = new Point(20, 166), AutoSize = true
             };
-            launch = new CheckBox { Text = "Démarrer Plume maintenant", Checked = true, Location = new Point(20, 196), AutoSize = true };
+            launch = new CheckBox { Text = L.T("Démarrer Plume maintenant", "Start Plume now"), Checked = true, Location = new Point(20, 196), AutoSize = true };
             var note = new Label
             {
-                Text = "Aucun droit d'administrateur n'est nécessaire. Pour désinstaller : Paramètres > Applications > "
-                     + "Applications installées > Plume.",
+                Text = L.T("Aucun droit d'administrateur n'est nécessaire. Pour désinstaller : Paramètres > Applications > "
+                         + "Applications installées > Plume.",
+                           "No administrator rights are needed. To uninstall: Settings > Apps > Installed apps > Plume."),
                 Location = new Point(20, 232), Size = new Size(480, 40), ForeColor = SystemColors.GrayText
             };
-            install = new Button { Text = update ? "Mettre à jour" : "Installer", Location = new Point(300, 286), Size = new Size(110, 30) };
-            cancel = new Button { Text = "Annuler", Location = new Point(416, 286), Size = new Size(90, 30) };
+            install = new Button { Text = update ? L.T("Mettre à jour", "Update") : L.T("Installer", "Install"), Location = new Point(300, 286), Size = new Size(110, 30) };
+            cancel = new Button { Text = L.T("Annuler", "Cancel"), Location = new Point(416, 286), Size = new Size(90, 30) };
             install.Click += delegate { DoInstall(); };
             cancel.Click += delegate { Close(); };
             Controls.AddRange(new Control[] { logo, title, desc, where, desktop, startup, launch, note, install, cancel });
@@ -172,7 +176,8 @@ namespace Plume
                     Launch = launch.Checked
                 });
                 UseWaitCursor = false;
-                MessageBox.Show(this, "Plume est installé.\n\nVous le trouverez dans le menu Démarrer (tapez « Plume »).",
+                MessageBox.Show(this, L.T("Plume est installé.\n\nVous le trouverez dans le menu Démarrer (tapez « Plume »).",
+                    "Plume is installed.\n\nYou will find it in the Start menu (type “Plume”)."),
                     Text, MessageBoxButtons.OK, MessageBoxIcon.Information);
                 Close();
             }
@@ -180,7 +185,7 @@ namespace Plume
             {
                 UseWaitCursor = false;
                 install.Enabled = cancel.Enabled = true;
-                MessageBox.Show(this, "L'installation a échoué :\n" + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(this, L.T("L'installation a échoué :\n", "Installation failed:\n") + ex.Message, Text, MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }
