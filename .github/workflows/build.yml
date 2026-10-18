@@ -1,0 +1,97 @@
+# Compilation de Plume sur GitHub.
+# - À chaque envoi : compilation, tests du moteur, et fichiers de la version en téléchargement (« artifacts »).
+# - Pour une étiquette vX.Y.Z : ces fichiers reçoivent une attestation de provenance (vérifiable avec
+#   « gh attestation verify PlumeSetup-X.Y.Z.exe -R fbastin/Plume ») et sont déposés dans un brouillon
+#   de version GitHub. Les notes de version sont rédigées à la main avant la publication.
+name: Compilation
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      version: ${{ steps.pack.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Compiler et lancer les tests du moteur
+        shell: cmd
+        run: build.cmd test
+
+      - name: Préparer les fichiers de la version
+        id: pack
+        shell: pwsh
+        run: |
+          $pattern = 'AssemblyVersion\("(\d+\.\d+\.\d+)\.0"\)'
+          $v = [regex]::Match((Get-Content src/App.cs -Raw), $pattern).Groups[1].Value
+          $vSetup = [regex]::Match((Get-Content setup/Setup.cs -Raw), $pattern).Groups[1].Value
+          if (-not $v -or $v -ne $vSetup) { throw "Numéros de version différents : App.cs « $v », Setup.cs « $vSetup »" }
+          if ($env:GITHUB_REF_TYPE -eq 'tag' -and $env:GITHUB_REF_NAME -ne "v$v") {
+            throw "L'étiquette $env:GITHUB_REF_NAME ne correspond pas à la version du programme ($v)"
+          }
+
+          $out = Join-Path $env:GITHUB_WORKSPACE 'dist'
+          $stage = Join-Path $env:RUNNER_TEMP 'Plume'
+          New-Item -ItemType Directory -Force $out, (Join-Path $stage 'data') | Out-Null
+          Copy-Item bin/Plume.exe, bin/Plume.exe.config, LICENSE, README.md, README.en.md $stage
+          Copy-Item data/fr.plm, data/en.plm, data/LICENSE.md (Join-Path $stage 'data')
+          Copy-Item bin/PlumeSetup.exe (Join-Path $out "PlumeSetup-$v.exe")
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [IO.Compression.ZipFile]::CreateFromDirectory($stage, (Join-Path $out "Plume-$v-portable.zip"),
+            [IO.Compression.CompressionLevel]::Optimal, $true)
+
+          $sums = Get-ChildItem $out | Sort-Object Name | ForEach-Object {
+            (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant() + '  ' + $_.Name
+          }
+          [IO.File]::WriteAllText((Join-Path $out 'SHA256SUMS.txt'), ($sums -join "`n") + "`n")
+          Get-Content (Join-Path $out 'SHA256SUMS.txt')
+          "version=$v" >> $env:GITHUB_OUTPUT
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Plume-${{ steps.pack.outputs.version }}
+          path: dist/
+          retention-days: 30
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write        # brouillon de version
+      id-token: write        # attestation de provenance
+      attestations: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Plume-${{ needs.build.outputs.version }}
+          path: dist
+
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: |
+            dist/PlumeSetup-*.exe
+            dist/Plume-*-portable.zip
+
+      - name: Créer le brouillon de version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          cd dist
+          if gh release view "$TAG" -R "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::error::La version $TAG existe déjà : ses fichiers ne sont pas remplacés."
+            exit 1
+          fi
+          gh release create "$TAG" -R "$GITHUB_REPOSITORY" --draft --verify-tag --title "Plume ${TAG#v}" \
+            --notes "Brouillon créé par la compilation automatique : rédiger les notes avant de publier." \
+            PlumeSetup-*.exe Plume-*-portable.zip SHA256SUMS.txt

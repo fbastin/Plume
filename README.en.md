@@ -107,6 +107,11 @@ build.cmd test     engine tests: tokenizing, accents, phonetics, FR/EN predictio
 build.cmd e2e      end-to-end test: opens a "Test Plume" window and types text into it (~30 s)
 ```
 
+On GitHub, every push is compiled and checked by the engine tests
+([.github/workflows/build.yml](.github/workflows/build.yml)). From version 1.0.3 on, release files are
+built by GitHub from the tagged code, with a provenance attestation that anyone can verify:
+`gh attestation verify PlumeSetup-X.Y.Z.exe -R fbastin/Plume`.
+
 The end-to-end test takes over the keyboard for about thirty seconds: do not use the computer
 meanwhile (it stops by itself if its window loses focus, without typing anywhere else).
 

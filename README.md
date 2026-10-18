@@ -108,6 +108,11 @@ build.cmd test     tests du moteur : découpage, accents, phonétique, prédicti
 build.cmd e2e      test de bout en bout : ouvre une fenêtre « Test Plume » et y tape du texte (~30 s)
 ```
 
+Sur GitHub, chaque envoi est compilé et vérifié par les tests du moteur
+([.github/workflows/build.yml](.github/workflows/build.yml)). À partir de la version 1.0.3, les fichiers
+d'une version sont produits par GitHub à partir du code étiqueté, avec une attestation de provenance que
+chacun peut vérifier : `gh attestation verify PlumeSetup-X.Y.Z.exe -R fbastin/Plume`.
+
 Le test de bout en bout prend le clavier pendant une trentaine de secondes : ne pas utiliser
 l'ordinateur pendant ce temps (il s'arrête de lui-même si sa fenêtre perd le focus, sans rien taper ailleurs).
 
