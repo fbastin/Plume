@@ -119,18 +119,14 @@ y sont alors redirigés.
 
 Les commentaires du code source sont en français.
 
-## Dictionnaires et licences des données
+## Licences
 
-Les fichiers `data/fr.plm` et `data/en.plm` contiennent uniquement des **comptes agrégés**
-(fréquences de mots et de suites de 2 ou 3 mots), calculés à partir de :
-
-- [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (Hermit Dave, d'après OpenSubtitles 2018) — CC BY-SA 4.0 ;
-- [Tatoeba](https://tatoeba.org) (phrases d'exemple) — CC BY 2.0 FR ;
-- [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de) (actualités 2023, 1 million de phrases) —
-  vérifier leurs conditions d'utilisation avant toute redistribution.
-
-Du fait de la licence CC BY-SA de FrequencyWords, les dictionnaires dérivés doivent être
-partagés dans les mêmes conditions s'ils sont redistribués.
+- **Code** : licence [MIT](LICENSE).
+- **Dictionnaires** (`data/fr.plm`, `data/en.plm`) : licence CC BY-SA 4.0, voir [data/LICENSE.md](data/LICENSE.md).
+  Ils contiennent uniquement des **comptes agrégés** (fréquences de mots et de suites de 2 ou 3 mots),
+  calculés à partir de [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles, CC BY-SA 4.0),
+  de [Tatoeba](https://tatoeba.org) (CC BY 2.0 FR) et de la [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de)
+  (CC BY ; usage commercial soumis à autorisation selon leurs conditions générales).
 
 Pour les reconstruire (Python 3, sans dépendance) :
 

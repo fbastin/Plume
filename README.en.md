@@ -118,18 +118,14 @@ are then redirected there.
 
 Source code comments are written in French.
 
-## Dictionaries and data licenses
+## Licenses
 
-The `data/fr.plm` and `data/en.plm` files only contain **aggregated counts**
-(frequencies of words and of 2- or 3-word sequences), computed from:
-
-- [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (Hermit Dave, from OpenSubtitles 2018) — CC BY-SA 4.0;
-- [Tatoeba](https://tatoeba.org) (example sentences) — CC BY 2.0 FR;
-- [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de) (2023 news, 1 million sentences) —
-  check their terms of use before any redistribution.
-
-Because FrequencyWords is licensed CC BY-SA, the derived dictionaries must be shared under the
-same terms if they are redistributed.
+- **Code**: [MIT](LICENSE) license.
+- **Dictionaries** (`data/fr.plm`, `data/en.plm`): CC BY-SA 4.0 license, see [data/LICENSE.md](data/LICENSE.md).
+  They only contain **aggregated counts** (frequencies of words and of 2- or 3-word sequences),
+  computed from [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles, CC BY-SA 4.0),
+  [Tatoeba](https://tatoeba.org) (CC BY 2.0 FR) and the [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de)
+  (CC BY; commercial use requires permission according to their general terms).
 
 To rebuild them (Python 3, no dependencies):
 
