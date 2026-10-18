@@ -126,7 +126,7 @@ Les commentaires du code source sont en français.
   Ils contiennent uniquement des **comptes agrégés** (fréquences de mots et de suites de 2 ou 3 mots),
   calculés à partir de [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles, CC BY-SA 4.0),
   de [Tatoeba](https://tatoeba.org) (CC BY 2.0 FR) et de la [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de)
-  (CC BY ; usage commercial soumis à autorisation selon leurs conditions générales).
+  (CC BY pour les corpus téléchargeables).
 
 Pour les reconstruire (Python 3, sans dépendance) :
 

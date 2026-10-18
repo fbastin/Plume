@@ -14,9 +14,10 @@ imposée par la première source.
 | [Tatoeba](https://tatoeba.org), phrases d'exemple | CC BY 2.0 FR | contributeurs de Tatoeba |
 | [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de), corpus d'actualités 2023 (1 million de phrases, français et anglais) | CC BY pour les corpus téléchargeables | D. Goldhahn, T. Eckart, U. Quasthoff, *Building Large Monolingual Dictionaries at the Leipzig Corpora Collection: From 100 to 200 Languages*, LREC 2012 |
 
-Les conditions générales du site de Leipzig interdisent par ailleurs l'**usage commercial** de leurs données
-sans autorisation écrite : avant tout usage commercial de ces dictionnaires, vérifiez leurs conditions ou
-reconstruisez les dictionnaires sans ce corpus (`tools/build_lm.py`).
+Les conditions d'utilisation de Leipzig distinguent deux cas : les corpus de texte proposés au téléchargement,
+utilisés ici, sont sous licence CC BY ; la licence CC BY-NC (pas d'usage commercial) ne s'applique qu'aux autres
+données et applications du projet, comme ses services d'interrogation en ligne. Les dictionnaires de Plume peuvent
+donc être réutilisés, y compris commercialement, aux conditions de la CC BY-SA 4.0.
 
 ---
 
@@ -34,6 +35,7 @@ license, required by the first source.
 | [Tatoeba](https://tatoeba.org), example sentences | CC BY 2.0 FR | Tatoeba contributors |
 | [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de), 2023 news corpora (1 million sentences, French and English) | CC BY for downloadable corpora | D. Goldhahn, T. Eckart, U. Quasthoff, *Building Large Monolingual Dictionaries at the Leipzig Corpora Collection: From 100 to 200 Languages*, LREC 2012 |
 
-The general terms of the Leipzig website also forbid **commercial use** of their data without written
-permission: before any commercial use of these dictionaries, check their terms or rebuild the dictionaries
-without that corpus (`tools/build_lm.py`).
+The Leipzig terms of use distinguish two cases: the text corpora offered for download, used here, are under the
+CC BY license; the CC BY-NC license (no commercial use) only applies to the project's other data and applications,
+such as its online query services. Plume's dictionaries can therefore be reused, commercially included, under the
+terms of CC BY-SA 4.0.

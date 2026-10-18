@@ -125,7 +125,7 @@ Source code comments are written in French.
   They only contain **aggregated counts** (frequencies of words and of 2- or 3-word sequences),
   computed from [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles, CC BY-SA 4.0),
   [Tatoeba](https://tatoeba.org) (CC BY 2.0 FR) and the [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de)
-  (CC BY; commercial use requires permission according to their general terms).
+  (CC BY for downloadable corpora).
 
 To rebuild them (Python 3, no dependencies):
 
