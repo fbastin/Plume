@@ -59,6 +59,7 @@ Sans installation, `bin\Plume.exe` se lance aussi directement (le dossier `bin` 
 | Lire la sélection (ou la dernière phrase) | bouton **Lire** ou **Ctrl+Maj+F12** (rappuyer pour arrêter) |
 | Mettre Plume en pause (ni suggestions, ni apprentissage) | bouton **Prédire** ou **Ctrl+Maj+F11** |
 | Ouvrir le menu (langue d'écriture, démarrage avec Windows, dossier des mots…) | clic droit sur la barre d'outils ou sur l'icône de Plume |
+| Voir la version, les licences et les liens utiles | menu → *À propos de Plume…* |
 | Quitter Plume | bouton **×** de la barre d'outils, ou menu → *Quitter Plume* |
 
 La barre d'outils se déplace en la faisant glisser par sa poignée. Le bouton **—** la masque sans
@@ -126,7 +127,7 @@ y sont alors redirigés.
 | `src/UserModel.cs` | mots appris, mots refusés, abréviations |
 | `src/Accessibility.cs` | position du curseur, champ mot de passe, sélection (UI Automation / MSAA) |
 | `src/Speaker.cs` | synthèse vocale |
-| `src/Windows.cs`, `src/OptionsForm.cs` | liste de mots, barre d'outils, fenêtre d'options |
+| `src/Windows.cs`, `src/OptionsForm.cs`, `src/AboutForm.cs` | liste de mots, barre d'outils, fenêtres d'options et « À propos » |
 | `src/Strings.cs` | langue de l'interface : chaque texte est écrit en français et en anglais, `L.T("Lire", "Read")` |
 | `src/Installer.cs`, `setup/Setup.cs` | installation, menu Démarrer, désinstallation |
 | `tools/build_lm.py` | construction des dictionnaires `data/*.plm` |
@@ -141,6 +142,9 @@ Les commentaires du code source sont en français.
   calculés à partir de [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles, CC BY-SA 4.0),
   de [Tatoeba](https://tatoeba.org) (CC BY 2.0 FR) et de la [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de)
   (CC BY pour les corpus téléchargeables).
+
+La fenêtre *À propos de Plume* rappelle ces licences et les sources des dictionnaires ; l'installation
+copie `LICENSE` et `data/LICENSE.md` à côté du programme.
 
 Pour les reconstruire (Python 3, sans dépendance) :
 

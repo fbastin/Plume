@@ -13,7 +13,7 @@ using Timer = System.Windows.Forms.Timer;
 [assembly: System.Reflection.AssemblyTitle("Plume")]
 [assembly: System.Reflection.AssemblyDescription("Assistant d'écriture / Writing assistant")]
 [assembly: System.Reflection.AssemblyProduct("Plume")]
-[assembly: System.Reflection.AssemblyVersion("1.0.1.0")]
+[assembly: System.Reflection.AssemblyVersion("1.0.2.0")]
 [assembly: System.Runtime.Versioning.TargetFramework(".NETFramework,Version=v4.8", FrameworkDisplayName = ".NET Framework 4.8")]
 
 namespace Plume
@@ -245,6 +245,7 @@ namespace Plume
         readonly List<IntPtr> winHooks = new List<IntPtr>();
         Predictor predictor;
         OptionsForm options;
+        AboutForm about;
 
         List<Prediction> pendingItems;
         PredictionSnapshot pendingSnapshot, shown;
@@ -1131,6 +1132,7 @@ namespace Plume
             m.Items.Add(menuStartup);
             m.Items.Add(L.T("Ouvrir le dossier de mes mots", "Open my words folder"), null, delegate { Process.Start("explorer.exe", "\"" + Settings.Folder + "\""); });
             m.Items.Add(new ToolStripSeparator());
+            m.Items.Add(L.T("À propos de Plume…", "About Plume…"), null, delegate { ShowAbout(); });
             m.Items.Add(L.T("Quitter Plume", "Quit Plume"), null, delegate { ExitThread(); });
             return m;
         }
@@ -1199,6 +1201,24 @@ namespace Plume
             };
             options.Show();
             options.Activate();
+        }
+
+        void ShowAbout()
+        {
+            if (about == null || about.IsDisposed)
+            {
+                about = new AboutForm();
+                try
+                {
+                    about.Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+                }
+                catch (Exception)
+                {
+                }
+                about.FormClosed += delegate { about = null; };
+                about.Show();
+            }
+            about.Activate();
         }
 
         /// <summary>Après « Appliquer » avec une autre langue d'interface : la fenêtre reparaît traduite.</summary>

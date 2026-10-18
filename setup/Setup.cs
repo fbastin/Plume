@@ -8,7 +8,7 @@ using System.Windows.Forms;
 [assembly: AssemblyTitle("Installation de Plume / Plume setup")]
 [assembly: AssemblyDescription("Installe Plume pour l'utilisateur courant / Installs Plume for the current user")]
 [assembly: AssemblyProduct("Plume")]
-[assembly: AssemblyVersion("1.0.1.0")]
+[assembly: AssemblyVersion("1.0.2.0")]
 
 namespace Plume
 {
@@ -69,7 +69,7 @@ namespace Plume
             Assembly asm = Assembly.GetExecutingAssembly();
             foreach (string name in asm.GetManifestResourceNames())
             {
-                if (name == "Plume.exe" || name == "Plume.exe.config" || name.StartsWith("data/", StringComparison.Ordinal))
+                if (name == "Plume.exe" || name == "Plume.exe.config" || name == "LICENSE" || name.StartsWith("data/", StringComparison.Ordinal))
                 {
                     string n = name;
                     files[n] = () => asm.GetManifestResourceStream(n);

@@ -58,6 +58,7 @@ Without installing, `bin\Plume.exe` also runs directly (the `bin` folder is self
 | Read the selection (or the last sentence) | **Read** button or **Ctrl+Shift+F12** (press again to stop) |
 | Pause Plume (no suggestions, no learning) | **Predict** button or **Ctrl+Shift+F11** |
 | Open the menu (writing language, start with Windows, words folder…) | right-click the toolbar or Plume's icon |
+| See the version, licenses and useful links | menu → *About Plume…* |
 | Quit Plume | **×** button on the toolbar, or menu → *Quit Plume* |
 
 Drag the toolbar by its handle to move it. The **—** button hides it without stopping Plume
@@ -125,7 +126,7 @@ are then redirected there.
 | `src/UserModel.cs` | learned words, blocked words, abbreviations |
 | `src/Accessibility.cs` | cursor position, password fields, selection (UI Automation / MSAA) |
 | `src/Speaker.cs` | speech synthesis |
-| `src/Windows.cs`, `src/OptionsForm.cs` | word list, toolbar, options window |
+| `src/Windows.cs`, `src/OptionsForm.cs`, `src/AboutForm.cs` | word list, toolbar, options and About windows |
 | `src/Strings.cs` | interface language: every text is written in French and English, `L.T("Lire", "Read")` |
 | `src/Installer.cs`, `setup/Setup.cs` | installation, Start menu, uninstallation |
 | `tools/build_lm.py` | builds the `data/*.plm` dictionaries |
@@ -140,6 +141,9 @@ Source code comments are written in French.
   computed from [FrequencyWords](https://github.com/hermitdave/FrequencyWords) (OpenSubtitles, CC BY-SA 4.0),
   [Tatoeba](https://tatoeba.org) (CC BY 2.0 FR) and the [Leipzig Corpora Collection](https://wortschatz.uni-leipzig.de)
   (CC BY for downloadable corpora).
+
+The *About Plume* window lists these licenses and the dictionary sources; the installer copies
+`LICENSE` and `data/LICENSE.md` next to the program.
 
 To rebuild them (Python 3, no dependencies):
 

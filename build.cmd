@@ -9,6 +9,7 @@ if not exist "%OUT%\data" mkdir "%OUT%\data"
 
 "%FW%\csc.exe" /nologo /target:winexe /optimize+ /codepage:65001 /warn:4 ^
   /out:"%OUT%\Plume.exe" /win32manifest:"%ROOT%src\app.manifest" /win32icon:"%ROOT%src\plume.ico" ^
+  /resource:"%ROOT%src\plume.ico",plume.ico ^
   /lib:"%FW%\WPF" /r:System.dll /r:System.Core.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll ^
   /r:System.Speech.dll /r:Accessibility.dll /r:UIAutomationClient.dll /r:UIAutomationTypes.dll /r:WindowsBase.dll ^
   "%ROOT%src\*.cs"
@@ -16,13 +17,16 @@ if errorlevel 1 exit /b 1
 
 copy /y "%ROOT%src\app.config" "%OUT%\Plume.exe.config" >nul
 copy /y "%ROOT%data\*.plm" "%OUT%\data\" >nul
+copy /y "%ROOT%LICENSE" "%OUT%\" >nul
+copy /y "%ROOT%data\LICENSE.md" "%OUT%\data\" >nul
 
-rem Programme d'installation en un seul fichier : Plume et ses dictionnaires y sont integres.
+rem Programme d'installation en un seul fichier : Plume, ses dictionnaires et leurs licences y sont integres.
 "%FW%\csc.exe" /nologo /target:winexe /optimize+ /codepage:65001 /warn:4 ^
   /out:"%OUT%\PlumeSetup.exe" /win32manifest:"%ROOT%setup\setup.manifest" /win32icon:"%ROOT%src\plume.ico" ^
   /r:System.dll /r:System.Drawing.dll /r:System.Windows.Forms.dll ^
   /resource:"%OUT%\Plume.exe",Plume.exe /resource:"%OUT%\Plume.exe.config",Plume.exe.config ^
   /resource:"%ROOT%data\fr.plm",data/fr.plm /resource:"%ROOT%data\en.plm",data/en.plm ^
+  /resource:"%ROOT%LICENSE",LICENSE /resource:"%ROOT%data\LICENSE.md",data/LICENSE.md ^
   "%ROOT%setup\Setup.cs" "%ROOT%src\Installer.cs" "%ROOT%src\Strings.cs"
 if errorlevel 1 exit /b 1
 
